@@ -1,0 +1,22 @@
+{% extends "layouts/base.html" %}
+
+{% block content %}
+
+<h2>Đăng ký</h2>
+
+<form method="POST">
+    <input type="text" name="username" required>
+    <input type="password" name="password" required>
+
+    <select name="role">
+        <option value="user">Nhân viên</option>
+        <option value="staff">Văn thư</option>
+        <option value="admin">Admin</option>
+    </select>
+
+    <button>Đăng ký</button>
+</form>
+
+<a href="/">Quay lại</a>
+
+{% endblock %}

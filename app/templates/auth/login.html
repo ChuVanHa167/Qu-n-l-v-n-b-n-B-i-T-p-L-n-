@@ -1,0 +1,17 @@
+{% extends "layouts/base.html" %}
+
+{% block content %}
+
+<h2>Đăng nhập</h2>
+
+<form method="POST">
+    <input type="text" name="username" placeholder="Username" required>
+    <input type="password" name="password" placeholder="Password" required>
+
+    <button>Đăng nhập</button>
+</form>
+
+<p>Chưa có tài khoản?</p>
+<a href="/register">Đăng ký</a>
+
+{% endblock %}
