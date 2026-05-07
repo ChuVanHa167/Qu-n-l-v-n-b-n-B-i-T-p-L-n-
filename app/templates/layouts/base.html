@@ -1,14 +1,25 @@
+<!-- =========================================
+FILE: app/templates/layouts/base.html
+========================================= -->
+
 <!DOCTYPE html>
-<html>
+<html lang="vi">
+
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>DocSys</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+    <!-- GLOBAL CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/global.css') }}">
+
+    {% block extra_css %}{% endblock %}
 </head>
+
 <body>
 
-<div class="container">
     {% block content %}{% endblock %}
-</div>
 
 </body>
 </html>

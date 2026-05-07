@@ -1,0 +1,100 @@
+<!-- =========================================
+FILE: app/templates/staff/processing_documents.html
+========================================= -->
+
+{% extends "layouts/dashboard_layout.html" %}
+
+{% block page_title %}
+Văn bản đang xử lý
+{% endblock %}
+
+{% block sidebar %}
+<li>
+    <a href="/staff">
+        📊 Dashboard
+    </a>
+</li>
+
+<li>
+    <a href="/staff/assigned-documents">
+        📥 Văn bản được giao
+    </a>
+</li>
+
+<li class="active">
+    <a href="/staff/processing-documents">
+        ⚙️ Đang xử lý
+    </a>
+</li>
+{% endblock %}
+
+{% block dashboard_content %}
+
+<h2>Danh sách văn bản đang xử lý</h2>
+
+<br>
+
+<div class="filter-bar">
+
+    <input type="text"
+           placeholder="🔍 Tìm kiếm văn bản">
+
+    <select>
+        <option>Processing</option>
+        <option>Done</option>
+    </select>
+
+</div>
+
+<table class="table">
+
+    <thead>
+
+        <tr>
+            <th>ID</th>
+            <th>Tiêu đề</th>
+            <th>Loại</th>
+            <th>Tiến độ</th>
+            <th>Deadline</th>
+            <th>Thao tác</th>
+        </tr>
+
+    </thead>
+
+    <tbody>
+
+        <tr>
+
+            <td>8</td>
+
+            <td>Hồ sơ nội bộ</td>
+
+            <td>Incoming</td>
+
+            <td>
+                <span class="status status-processing">
+                    Processing
+                </span>
+            </td>
+
+            <td>30/04/2026</td>
+
+            <td>
+
+                <button class="btn btn-warning">
+                    Cập nhật
+                </button>
+
+                <button class="btn btn-success">
+                    Hoàn thành
+                </button>
+
+            </td>
+
+        </tr>
+
+    </tbody>
+
+</table>
+
+{% endblock %}

@@ -1,0 +1,23 @@
+<!-- =========================================
+FILE: app/templates/layouts/auth_layout.html
+========================================= -->
+
+{% extends "layouts/base.html" %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+{% endblock %}
+
+{% block content %}
+
+<div class="auth-container">
+
+    <div class="auth-box">
+
+        {% block auth_content %}{% endblock %}
+
+    </div>
+
+</div>
+
+{% endblock %}

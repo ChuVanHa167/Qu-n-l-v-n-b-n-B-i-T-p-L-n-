@@ -1,17 +1,43 @@
-{% extends "layouts/base.html" %}
+<!-- =========================================
+FILE: app/templates/auth/login.html
+========================================= -->
 
-{% block content %}
+{% extends "layouts/auth_layout.html" %}
 
-<h2>Đăng nhập</h2>
+{% block auth_content %}
 
-<form method="POST">
-    <input type="text" name="username" placeholder="Username" required>
-    <input type="password" name="password" placeholder="Password" required>
+<h1 class="auth-title">Đăng nhập hệ thống</h1>
 
-    <button>Đăng nhập</button>
+{% if error %}
+<div class="auth-error">
+    {{ error }}
+</div>
+<br>
+{% endif %}
+
+<form method="POST" class="auth-form">
+
+    <input type="text"
+           name="username"
+           placeholder="Nhập username">
+
+    <input type="password"
+           name="password"
+           placeholder="Nhập password">
+
+    <button class="btn">
+        Đăng nhập
+    </button>
+
 </form>
 
-<p>Chưa có tài khoản?</p>
-<a href="/register">Đăng ký</a>
+<div class="auth-footer">
+
+    <p>
+        Chưa có tài khoản?
+        <a href="/register">Đăng ký</a>
+    </p>
+
+</div>
 
 {% endblock %}

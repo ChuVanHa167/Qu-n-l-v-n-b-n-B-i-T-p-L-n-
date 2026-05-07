@@ -1,0 +1,54 @@
+/* =========================================
+FILE: app/static/css/admin.css
+========================================= */
+
+/* ADMIN HEADER */
+.page-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:25px;
+}
+
+/* SEARCH BOX */
+.search-box{
+    width:300px;
+}
+
+/* QUICK ACTIONS */
+.quick-actions{
+    display:flex;
+    gap:15px;
+    margin-bottom:25px;
+}
+
+/* SETTINGS */
+.settings-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:20px;
+}
+
+/* AUDIT */
+.audit-item{
+    background:white;
+    padding:18px;
+    border-radius:12px;
+    margin-bottom:15px;
+    border-left:5px solid #2563eb;
+}
+
+/* USER AVATAR */
+.user-badge{
+    width:40px;
+    height:40px;
+    border-radius:50%;
+    background:#2563eb;
+    color:white;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    font-weight:bold;
+}

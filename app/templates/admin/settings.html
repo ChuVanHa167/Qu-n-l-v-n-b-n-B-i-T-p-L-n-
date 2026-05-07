@@ -1,0 +1,73 @@
+<!-- =========================================
+FILE: app/templates/admin/settings.html
+========================================= -->
+
+{% extends "layouts/dashboard_layout.html" %}
+
+{% block page_title %}
+Settings
+{% endblock %}
+
+{% block sidebar %}
+<li><a href="/admin">📊 Dashboard</a></li>
+<li><a href="/admin/users">👥 Users</a></li>
+<li><a href="/admin/documents">📄 Documents</a></li>
+<li><a href="/admin/audit">📜 Audit Logs</a></li>
+<li class="active"><a href="/admin/settings">⚙️ Settings</a></li>
+{% endblock %}
+
+{% block dashboard_content %}
+
+<h2>Cài đặt hệ thống</h2>
+
+<br>
+
+<div class="settings-grid">
+
+    <div class="card">
+
+        <h3>Thông tin hệ thống</h3>
+
+        <br>
+
+        <label>Tên hệ thống</label>
+        <input type="text" value="DocSys">
+
+        <br><br>
+
+        <label>Email quản trị</label>
+        <input type="email" value="admin@gmail.com">
+
+        <br><br>
+
+        <button class="btn">
+            Lưu thay đổi
+        </button>
+
+    </div>
+
+    <div class="card">
+
+        <h3>Bảo mật</h3>
+
+        <br>
+
+        <label>Đổi mật khẩu admin</label>
+        <input type="password">
+
+        <br><br>
+
+        <label>Xác nhận mật khẩu</label>
+        <input type="password">
+
+        <br><br>
+
+        <button class="btn btn-danger">
+            Cập nhật mật khẩu
+        </button>
+
+    </div>
+
+</div>
+
+{% endblock %}

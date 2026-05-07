@@ -1,0 +1,57 @@
+<!-- =========================================
+FILE: app/templates/layouts/dashboard_layout.html
+========================================= -->
+
+{% extends "layouts/base.html" %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+{% endblock %}
+
+{% block content %}
+
+<div class="app">
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+
+        <h2 class="logo">📂 DocSys</h2>
+
+        <ul class="menu">
+            {% block sidebar %}{% endblock %}
+        </ul>
+
+    </div>
+
+    <!-- MAIN -->
+    <div class="main">
+
+        <!-- NAVBAR -->
+        <div class="navbar">
+
+            <h3>{% block page_title %}{% endblock %}</h3>
+
+            <div>
+                👤 {{ session['user'] }}
+                |
+                <a href="/logout">Đăng xuất</a>
+            </div>
+
+        </div>
+
+        <!-- CONTENT -->
+        <div class="content">
+            {% block dashboard_content %}{% endblock %}
+        </div>
+
+    </div>
+
+</div>
+
+<!-- JS -->
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+
+{% block extra_js %}{% endblock %}
+
+{% endblock %}

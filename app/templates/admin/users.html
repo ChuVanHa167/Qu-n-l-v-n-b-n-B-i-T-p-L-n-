@@ -1,0 +1,85 @@
+<!-- =========================================
+FILE: app/templates/admin/users.html
+========================================= -->
+
+{% extends "layouts/dashboard_layout.html" %}
+
+{% block page_title %}
+Quản lý User
+{% endblock %}
+
+{% block sidebar %}
+<li><a href="/admin">📊 Dashboard</a></li>
+<li class="active"><a href="/admin/users">👥 Users</a></li>
+<li><a href="/admin/documents">📄 Documents</a></li>
+<li><a href="/admin/audit">📜 Audit Logs</a></li>
+<li><a href="/admin/settings">⚙️ Settings</a></li>
+{% endblock %}
+
+{% block dashboard_content %}
+
+<div class="page-header">
+
+    <h2>Danh sách người dùng</h2>
+
+    <button class="btn">
+        ➕ Thêm User
+    </button>
+
+</div>
+
+<div class="filter-bar">
+
+    <input type="text"
+           placeholder="🔍 Tìm kiếm user...">
+
+    <select>
+        <option>Tất cả role</option>
+        <option>Admin</option>
+        <option>Staff</option>
+        <option>Employee</option>
+    </select>
+
+</div>
+
+<table class="table">
+
+    <thead>
+
+        <tr>
+            <th>ID</th>
+            <th>Username</th>
+            <th>Role</th>
+            <th>Trạng thái</th>
+            <th>Thao tác</th>
+        </tr>
+
+    </thead>
+
+    <tbody>
+
+        <tr>
+            <td>1</td>
+            <td>admin</td>
+            <td>Admin</td>
+            <td>
+                <span class="status status-done">
+                    Active
+                </span>
+            </td>
+            <td>
+                <button class="btn btn-warning">
+                    Edit
+                </button>
+
+                <button class="btn btn-danger">
+                    Delete
+                </button>
+            </td>
+        </tr>
+
+    </tbody>
+
+</table>
+
+{% endblock %}

@@ -1,0 +1,78 @@
+<!-- =========================================
+FILE: app/templates/employee/dashboard.html
+========================================= -->
+
+{% extends "layouts/dashboard_layout.html" %}
+
+{% block page_title %}
+Employee Dashboard
+{% endblock %}
+
+{% block sidebar %}
+<li class="active">
+    <a href="/employee">
+        📊 Dashboard
+    </a>
+</li>
+
+<li>
+    <a href="/employee/my-documents">
+        📄 Văn bản của tôi
+    </a>
+</li>
+{% endblock %}
+
+{% block dashboard_content %}
+
+<div class="alert">
+    📢 Bạn có 3 văn bản cần theo dõi
+</div>
+
+<div class="cards">
+
+    <div class="stats-card">
+        <p>Đã gửi</p>
+        <h2>12</h2>
+    </div>
+
+    <div class="stats-card">
+        <p>Đang xử lý</p>
+        <h2>4</h2>
+    </div>
+
+    <div class="stats-card">
+        <p>Hoàn thành</p>
+        <h2>8</h2>
+    </div>
+
+</div>
+
+<div class="chart-box">
+
+    <h3>📈 Tiến độ xử lý văn bản</h3>
+
+    <div class="fake-chart"></div>
+
+</div>
+
+<br>
+
+<h2>Thông báo gần đây</h2>
+
+<ul class="timeline">
+
+    <li>
+        Văn bản CV001 đã được tiếp nhận
+    </li>
+
+    <li>
+        Văn bản CV002 đang xử lý
+    </li>
+
+    <li>
+        Văn bản CV003 đã hoàn thành
+    </li>
+
+</ul>
+
+{% endblock %}

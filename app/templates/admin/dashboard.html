@@ -1,0 +1,74 @@
+<!-- =========================================
+FILE: app/templates/admin/dashboard.html
+========================================= -->
+
+{% extends "layouts/dashboard_layout.html" %}
+
+{% block page_title %}
+Dashboard Admin
+{% endblock %}
+
+{% block sidebar %}
+<li class="active"><a href="/admin">📊 Dashboard</a></li>
+<li><a href="/admin/users">👥 Users</a></li>
+<li><a href="/admin/documents">📄 Documents</a></li>
+<li><a href="/admin/audit">📜 Audit Logs</a></li>
+<li><a href="/admin/settings">⚙️ Settings</a></li>
+{% endblock %}
+
+{% block dashboard_content %}
+
+<div class="alert">
+    ⚠️ Có 5 văn bản đang chờ xử lý
+</div>
+
+<!-- STATS -->
+<div class="cards">
+
+    <div class="stats-card">
+        <p>Tổng User</p>
+        <h2>120</h2>
+    </div>
+
+    <div class="stats-card">
+        <p>Tổng Văn Bản</p>
+        <h2>540</h2>
+    </div>
+
+    <div class="stats-card">
+        <p>Đang xử lý</p>
+        <h2>25</h2>
+    </div>
+
+    <div class="stats-card">
+        <p>Hoàn thành</p>
+        <h2>480</h2>
+    </div>
+
+</div>
+
+<!-- CHART -->
+<div class="chart-box">
+
+    <h3>📈 Thống kê văn bản</h3>
+
+    <div class="fake-chart"></div>
+
+</div>
+
+<!-- RECENT -->
+<br>
+
+<h2>Hoạt động gần đây</h2>
+
+<ul class="timeline">
+
+    <li>Admin tạo tài khoản mới</li>
+
+    <li>Văn thư xử lý công văn đến</li>
+
+    <li>Nhân viên gửi văn bản</li>
+
+</ul>
+
+{% endblock %}

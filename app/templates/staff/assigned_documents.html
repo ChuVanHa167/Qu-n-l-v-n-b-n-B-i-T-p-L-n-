@@ -1,0 +1,97 @@
+<!-- =========================================
+FILE: app/templates/staff/assigned_documents.html
+========================================= -->
+
+{% extends "layouts/dashboard_layout.html" %}
+
+{% block page_title %}
+Văn bản được giao
+{% endblock %}
+
+{% block sidebar %}
+<li>
+    <a href="/staff">
+        📊 Dashboard
+    </a>
+</li>
+
+<li class="active">
+    <a href="/staff/assigned-documents">
+        📥 Văn bản được giao
+    </a>
+</li>
+
+<li>
+    <a href="/staff/processing-documents">
+        ⚙️ Đang xử lý
+    </a>
+</li>
+{% endblock %}
+
+{% block dashboard_content %}
+
+<h2>Danh sách văn bản được giao</h2>
+
+<br>
+
+<div class="filter-bar">
+
+    <input type="text"
+           placeholder="🔍 Tìm kiếm">
+
+    <select>
+        <option>Tất cả</option>
+        <option>Incoming</option>
+        <option>Outgoing</option>
+    </select>
+
+</div>
+
+<table class="table">
+
+    <thead>
+
+        <tr>
+            <th>ID</th>
+            <th>Tiêu đề</th>
+            <th>Người tạo</th>
+            <th>Ngày giao</th>
+            <th>Trạng thái</th>
+            <th>Thao tác</th>
+        </tr>
+
+    </thead>
+
+    <tbody>
+
+        <tr>
+
+            <td>5</td>
+
+            <td>Công văn khẩn</td>
+
+            <td>admin</td>
+
+            <td>22/04/2026</td>
+
+            <td>
+                <span class="status status-pending">
+                    Pending
+                </span>
+            </td>
+
+            <td>
+
+                <button class="btn btn-success">
+                    Nhận xử lý
+                </button>
+
+            </td>
+
+        </tr>
+
+    </tbody>
+
+</table>
+
+{% endblock %}

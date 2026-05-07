@@ -1,0 +1,84 @@
+<!-- =========================================
+FILE: app/templates/staff/dashboard.html
+========================================= -->
+
+{% extends "layouts/dashboard_layout.html" %}
+
+{% block page_title %}
+Staff Dashboard
+{% endblock %}
+
+{% block sidebar %}
+<li class="active">
+    <a href="/staff">
+        📊 Dashboard
+    </a>
+</li>
+
+<li>
+    <a href="/staff/assigned-documents">
+        📥 Văn bản được giao
+    </a>
+</li>
+
+<li>
+    <a href="/staff/processing-documents">
+        ⚙️ Đang xử lý
+    </a>
+</li>
+{% endblock %}
+
+{% block dashboard_content %}
+
+<div class="alert">
+    ⚠️ Có 6 văn bản cần xử lý hôm nay
+</div>
+
+<div class="cards">
+
+    <div class="stats-card">
+        <p>Được giao</p>
+        <h2>20</h2>
+    </div>
+
+    <div class="stats-card">
+        <p>Đang xử lý</p>
+        <h2>6</h2>
+    </div>
+
+    <div class="stats-card">
+        <p>Hoàn thành</p>
+        <h2>14</h2>
+    </div>
+
+</div>
+
+<div class="chart-box">
+
+    <h3>📊 Hiệu suất xử lý</h3>
+
+    <div class="fake-chart"></div>
+
+</div>
+
+<br>
+
+<h2>Công việc gần đây</h2>
+
+<ul class="timeline">
+
+    <li>
+        Tiếp nhận công văn CV100
+    </li>
+
+    <li>
+        Đã xử lý hồ sơ HS002
+    </li>
+
+    <li>
+        Chuyển văn bản đến admin
+    </li>
+
+</ul>
+
+{% endblock %}

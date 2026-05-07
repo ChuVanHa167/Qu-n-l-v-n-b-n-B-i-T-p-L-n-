@@ -1,0 +1,105 @@
+<!-- =========================================
+FILE: app/templates/admin/documents.html
+========================================= -->
+
+{% extends "layouts/dashboard_layout.html" %}
+
+{% block page_title %}
+Quản lý văn bản
+{% endblock %}
+
+{% block sidebar %}
+<li><a href="/admin">📊 Dashboard</a></li>
+<li><a href="/admin/users">👥 Users</a></li>
+<li class="active"><a href="/admin/documents">📄 Documents</a></li>
+<li><a href="/admin/audit">📜 Audit Logs</a></li>
+<li><a href="/admin/settings">⚙️ Settings</a></li>
+{% endblock %}
+
+{% block dashboard_content %}
+
+<div class="page-header">
+
+    <h2>Danh sách văn bản</h2>
+
+    <button class="btn">
+        ➕ Tạo văn bản
+    </button>
+
+</div>
+
+<div class="filter-bar">
+
+    <input type="text"
+           id="documentSearch"
+           placeholder="🔍 Tìm kiếm văn bản">
+
+    <select>
+        <option>Tất cả trạng thái</option>
+        <option>Pending</option>
+        <option>Processing</option>
+        <option>Done</option>
+    </select>
+
+</div>
+
+<table class="table">
+
+    <thead>
+
+        <tr>
+            <th>ID</th>
+            <th>Tiêu đề</th>
+            <th>Loại</th>
+            <th>Trạng thái</th>
+            <th>Người tạo</th>
+            <th>Thao tác</th>
+        </tr>
+
+    </thead>
+
+    <tbody>
+
+        <tr>
+
+            <td>1</td>
+
+            <td>Công văn 001</td>
+
+            <td>Incoming</td>
+
+            <td>
+                <span class="status status-processing">
+                    Processing
+                </span>
+            </td>
+
+            <td>admin</td>
+
+            <td>
+
+                <button class="btn btn-success">
+                    View
+                </button>
+
+                <button class="btn btn-warning">
+                    Edit
+                </button>
+
+                <button class="btn btn-danger btn-delete">
+                    Delete
+                </button>
+
+            </td>
+
+        </tr>
+
+    </tbody>
+
+</table>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/document.js') }}"></script>
+{% endblock %}

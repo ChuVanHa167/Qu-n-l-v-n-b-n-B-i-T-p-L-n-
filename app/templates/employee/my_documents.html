@@ -1,0 +1,98 @@
+<!-- =========================================
+FILE: app/templates/employee/my_documents.html
+========================================= -->
+
+{% extends "layouts/dashboard_layout.html" %}
+
+{% block page_title %}
+Văn bản của tôi
+{% endblock %}
+
+{% block sidebar %}
+<li>
+    <a href="/employee">
+        📊 Dashboard
+    </a>
+</li>
+
+<li class="active">
+    <a href="/employee/my-documents">
+        📄 Văn bản của tôi
+    </a>
+</li>
+{% endblock %}
+
+{% block dashboard_content %}
+
+<div class="page-header">
+
+    <h2>Danh sách văn bản cá nhân</h2>
+
+    <button class="btn">
+        ➕ Gửi văn bản mới
+    </button>
+
+</div>
+
+<div class="filter-bar">
+
+    <input type="text"
+           placeholder="🔍 Tìm kiếm văn bản">
+
+    <select>
+        <option>Tất cả</option>
+        <option>Pending</option>
+        <option>Processing</option>
+        <option>Done</option>
+    </select>
+
+</div>
+
+<table class="table">
+
+    <thead>
+
+        <tr>
+            <th>ID</th>
+            <th>Tiêu đề</th>
+            <th>Loại</th>
+            <th>Trạng thái</th>
+            <th>Ngày tạo</th>
+            <th>Thao tác</th>
+        </tr>
+
+    </thead>
+
+    <tbody>
+
+        <tr>
+
+            <td>1</td>
+
+            <td>Đơn xin nghỉ phép</td>
+
+            <td>Outgoing</td>
+
+            <td>
+                <span class="status status-processing">
+                    Processing
+                </span>
+            </td>
+
+            <td>20/04/2026</td>
+
+            <td>
+
+                <button class="btn btn-success">
+                    View
+                </button>
+
+            </td>
+
+        </tr>
+
+    </tbody>
+
+</table>
+
+{% endblock %}
