@@ -1,14 +1,6 @@
 # =========================================================
 # FILE: app/controllers/staff_controller.py
 # =========================================================
-# MỤC ĐÍCH:
-# - Xử lý dashboard STAFF
-#
-# STAFF:
-# - Xem văn bản được giao
-# - Xử lý văn bản
-# - Cập nhật trạng thái
-# =========================================================
 
 from flask import Blueprint
 from flask import render_template
@@ -47,12 +39,34 @@ def staff_dashboard():
     if not check_staff():
         return redirect('/')
 
-    documents = DocumentModel.get_all_documents()
+    assigned_documents = (
+        DocumentModel.get_documents_by_assignee(
+            session['user_id']
+        )
+    )
+
+    processing_documents = len(
+        DocumentModel.get_documents_by_status(
+            "processing"
+        )
+    )
+
+    approved_documents = len(
+        DocumentModel.get_documents_by_status(
+            'approved'
+        )
+    )
 
     return render_template(
         'staff/dashboard.html',
-        documents=documents
+
+        assigned_documents=assigned_documents,
+
+        processing_documents=processing_documents,
+
+        approved_documents=approved_documents
     )
+
 
 # =========================================================
 # ASSIGNED DOCUMENTS
@@ -63,7 +77,11 @@ def assigned_documents():
     if not check_staff():
         return redirect('/')
 
-    documents = DocumentModel.get_all_documents()
+    documents = (
+        DocumentModel.get_documents_by_assignee(
+            session['user_id']
+        )
+    )
 
     return render_template(
         'staff/assigned_documents.html',
@@ -80,9 +98,34 @@ def processing_documents():
     if not check_staff():
         return redirect('/')
 
-    documents = DocumentModel.get_all_documents()
+    documents = (
+        DocumentModel.get_documents_by_status(
+            'processing'
+        )
+    )
 
     return render_template(
         'staff/processing_documents.html',
+        documents=documents
+    )
+
+
+# =========================================================
+# APPROVED DOCUMENTS
+# =========================================================
+@staff_bp.route('/staff/approved-documents')
+def approved_documents():
+
+    if not check_staff():
+        return redirect('/')
+
+    documents = (
+        DocumentModel.get_documents_by_status(
+            'approved'
+        )
+    )
+
+    return render_template(
+        'staff/approved_documents.html',
         documents=documents
     )

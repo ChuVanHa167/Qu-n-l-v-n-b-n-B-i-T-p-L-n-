@@ -9,29 +9,63 @@ Audit Logs
 {% endblock %}
 
 {% block sidebar %}
-<li><a href="/admin">📊 Dashboard</a></li>
-<li><a href="/admin/users">👥 Users</a></li>
-<li><a href="/admin/documents">📄 Documents</a></li>
-<li class="active"><a href="/admin/audit-logs">📜 Audit Logs</a></li>
-<li><a href="/admin/settings">⚙️ Settings</a></li>
+<li>
+    <a href="/admin">
+        📊 Dashboard
+    </a>
+</li>
+
+<li>
+    <a href="/admin/users">
+        👥 Users
+    </a>
+</li>
+
+<li>
+    <a href="/admin/documents">
+        📄 Documents
+    </a>
+</li>
+
+<li class="active">
+    <a href="/admin/audit">
+        📜 Audit Logs
+    </a>
+</li>
+
+<li>
+    <a href="/admin/settings">
+        ⚙️ Settings
+    </a>
+</li>
 {% endblock %}
 
 {% block dashboard_content %}
 
-<h2>Nhật ký hệ thống</h2>
+<h2>📜 Nhật ký hệ thống</h2>
 
 <br>
 
-<div class="audit-item">
-    👤 admin đã tạo user mới
-</div>
+{% for log in logs %}
 
 <div class="audit-item">
-    📄 staff cập nhật trạng thái văn bản
+
+    <strong>{{ log.action }}</strong>
+
+    <br><br>
+
+    {{ log.description }}
+
+    <br><br>
+
+    👤 User ID: {{ log.user_id }}
+
+    <br>
+
+    🕒 {{ log.created_at }}
+
 </div>
 
-<div class="audit-item">
-    ⚙️ admin thay đổi cấu hình hệ thống
-</div>
+{% endfor %}
 
 {% endblock %}

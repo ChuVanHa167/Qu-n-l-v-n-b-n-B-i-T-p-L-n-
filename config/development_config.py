@@ -3,20 +3,23 @@
 # =========================================================
 
 """
-Development Config
-------------------
+=========================================================
+DEVELOPMENT CONFIG
+=========================================================
+
 Môi trường phát triển local.
 
 Dùng khi:
-- code local
-- debug
-- test giao diện
-- test database
+- Code local
+- Debug
+- Test giao diện
+- Test database
 
 ĐẶC ĐIỂM:
 - DEBUG bật
-- reload tự động
-- log chi tiết
+- Auto reload
+- Log chi tiết
+=========================================================
 """
 
 import os
@@ -25,24 +28,34 @@ import os
 class DevelopmentConfig:
 
     # =====================================================
+    # BASE DIRECTORY
+    # =====================================================
+    BASE_DIR = os.path.abspath(
+        os.path.dirname(__file__)
+    )
+
+    PROJECT_ROOT = os.path.abspath(
+        os.path.join(BASE_DIR, "..")
+    )
+
+    # =====================================================
     # FLASK CORE
     # =====================================================
     DEBUG = True
 
     TESTING = False
 
-    SECRET_KEY = "dev_secret_key"
+    SECRET_KEY = "development_secret_key"
+
+    JSON_AS_ASCII = False
+
+    TEMPLATES_AUTO_RELOAD = True
 
     # =====================================================
     # DATABASE
     # =====================================================
-    BASE_DIR = os.path.abspath(
-        os.path.dirname(__file__)
-    )
-
     DATABASE = os.path.join(
-        BASE_DIR,
-        "..",
+        PROJECT_ROOT,
         "database",
         "development.db"
     )
@@ -54,17 +67,23 @@ class DevelopmentConfig:
 
     SESSION_COOKIE_HTTPONLY = True
 
+    SESSION_COOKIE_SECURE = False
+
+    PERMANENT_SESSION_LIFETIME = 3600
+
     # =====================================================
     # SECURITY
     # =====================================================
     WTF_CSRF_ENABLED = False
 
     # =====================================================
-    # APP INFO
+    # APPLICATION INFO
     # =====================================================
-    APP_NAME = "Document Management System"
+    APP_NAME = "Smart Document Management System"
 
     APP_VERSION = "1.0 Development"
+
+    COMPANY_NAME = "Python Project Team"
 
     # =====================================================
     # PAGINATION
@@ -73,14 +92,37 @@ class DevelopmentConfig:
 
     DOCUMENTS_PER_PAGE = 10
 
+    LOGS_PER_PAGE = 20
+
     # =====================================================
     # FILE UPLOAD
     # =====================================================
     MAX_CONTENT_LENGTH = 16 * 1024 * 1024
 
-    UPLOAD_FOLDER = "app/static/uploads"
+    UPLOAD_FOLDER = os.path.join(
+        PROJECT_ROOT,
+        "app",
+        "static",
+        "uploads"
+    )
+
+    ALLOWED_EXTENSIONS = {
+        'pdf',
+        'doc',
+        'docx',
+        'xls',
+        'xlsx',
+        'png',
+        'jpg',
+        'jpeg'
+    }
 
     # =====================================================
     # LOGGING
     # =====================================================
     LOG_LEVEL = "DEBUG"
+
+    # =====================================================
+    # CACHE
+    # =====================================================
+    SEND_FILE_MAX_AGE_DEFAULT = 0

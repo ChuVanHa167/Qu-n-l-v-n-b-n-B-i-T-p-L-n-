@@ -9,16 +9,40 @@ Settings
 {% endblock %}
 
 {% block sidebar %}
-<li><a href="/admin">📊 Dashboard</a></li>
-<li><a href="/admin/users">👥 Users</a></li>
-<li><a href="/admin/documents">📄 Documents</a></li>
-<li><a href="/admin/audit">📜 Audit Logs</a></li>
-<li class="active"><a href="/admin/settings">⚙️ Settings</a></li>
+<li>
+    <a href="/admin">
+        📊 Dashboard
+    </a>
+</li>
+
+<li>
+    <a href="/admin/users">
+        👥 Users
+    </a>
+</li>
+
+<li>
+    <a href="/admin/documents">
+        📄 Documents
+    </a>
+</li>
+
+<li>
+    <a href="/admin/audit">
+        📜 Audit Logs
+    </a>
+</li>
+
+<li class="active">
+    <a href="/admin/settings">
+        ⚙️ Settings
+    </a>
+</li>
 {% endblock %}
 
 {% block dashboard_content %}
 
-<h2>Cài đặt hệ thống</h2>
+<h2>⚙️ Cài đặt hệ thống</h2>
 
 <br>
 
@@ -31,12 +55,29 @@ Settings
         <br>
 
         <label>Tên hệ thống</label>
-        <input type="text" value="DocSys">
+
+        <input
+            type="text"
+            value="AI Document Management System"
+        >
 
         <br><br>
 
         <label>Email quản trị</label>
-        <input type="email" value="admin@gmail.com">
+
+        <input
+            type="email"
+            value="admin@school.edu.vn"
+        >
+
+        <br><br>
+
+        <label>OCR Engine</label>
+
+        <input
+            type="text"
+            value="PyTesseract OCR"
+        >
 
         <br><br>
 
@@ -48,22 +89,24 @@ Settings
 
     <div class="card">
 
-        <h3>Bảo mật</h3>
+        <h3>Bảo mật hệ thống</h3>
 
         <br>
 
-        <label>Đổi mật khẩu admin</label>
+        <label>Mật khẩu admin</label>
+
         <input type="password">
 
         <br><br>
 
         <label>Xác nhận mật khẩu</label>
+
         <input type="password">
 
         <br><br>
 
         <button class="btn btn-danger">
-            Cập nhật mật khẩu
+            Cập nhật bảo mật
         </button>
 
     </div>

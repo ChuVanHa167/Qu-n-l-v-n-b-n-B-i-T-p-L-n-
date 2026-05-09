@@ -9,6 +9,7 @@ Staff Dashboard
 {% endblock %}
 
 {% block sidebar %}
+
 <li class="active">
     <a href="/staff">
         📊 Dashboard
@@ -26,29 +27,63 @@ Staff Dashboard
         ⚙️ Đang xử lý
     </a>
 </li>
+
 {% endblock %}
 
 {% block dashboard_content %}
 
-<div class="alert">
-    ⚠️ Có 6 văn bản cần xử lý hôm nay
+<div class="page-header">
+
+    <div>
+
+        <h2>Xin chào {{ session.username }}</h2>
+
+        <p class="text-muted">
+            Theo dõi tiến độ xử lý công việc hôm nay
+        </p>
+
+    </div>
+
 </div>
+
+{% if processing_documents > 0 %}
+<div class="alert">
+    ⚠️ Có {{ processing_documents }} văn bản cần xử lý
+</div>
+{% endif %}
 
 <div class="cards">
 
     <div class="stats-card">
+
         <p>Được giao</p>
-        <h2>20</h2>
+
+        <h2>{{ assigned_documents }}</h2>
+
     </div>
 
     <div class="stats-card">
+
         <p>Đang xử lý</p>
-        <h2>6</h2>
+
+        <h2>{{ processing_documents }}</h2>
+
     </div>
 
     <div class="stats-card">
+
         <p>Hoàn thành</p>
-        <h2>14</h2>
+
+        <h2>{{ completed_documents }}</h2>
+
+    </div>
+
+    <div class="stats-card">
+
+        <p>Quá hạn</p>
+
+        <h2>{{ overdue_documents }}</h2>
+
     </div>
 
 </div>
@@ -61,24 +96,26 @@ Staff Dashboard
 
 </div>
 
-<br>
+<div class="card mt-20">
 
-<h2>Công việc gần đây</h2>
+    <h3>🕒 Công việc gần đây</h3>
 
-<ul class="timeline">
+    <ul class="timeline">
 
-    <li>
-        Tiếp nhận công văn CV100
-    </li>
+        <li>
+            Tiếp nhận công văn mới
+        </li>
 
-    <li>
-        Đã xử lý hồ sơ HS002
-    </li>
+        <li>
+            Cập nhật trạng thái xử lý
+        </li>
 
-    <li>
-        Chuyển văn bản đến admin
-    </li>
+        <li>
+            Hoàn thành văn bản nội bộ
+        </li>
 
-</ul>
+    </ul>
+
+</div>
 
 {% endblock %}

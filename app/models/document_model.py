@@ -1,19 +1,72 @@
 # =========================================================
 # FILE: app/models/document_model.py
 # =========================================================
-# MỤC ĐÍCH:
-# - Quản lý dữ liệu văn bản
-#
-# SOLID:
-# - Chỉ xử lý DOCUMENTS
-# - Không chứa auth logic
-# - Không render template
-# =========================================================
 
 from app.models.database import get_db
 
 
 class DocumentModel:
+
+    # =====================================================
+    # GET DOCUMENTS BY STATUS
+    # =====================================================
+    @staticmethod
+    def get_documents_by_status(status):
+
+        db = get_db()
+
+        return db.execute("""
+            SELECT *
+            FROM documents
+            WHERE status = ?
+            ORDER BY created_at DESC
+        """, (status,)).fetchall()
+
+    # =====================================================
+    # GET DOCUMENTS BY STATUS
+    # =====================================================
+    @staticmethod
+    def get_documents_by_status(status):
+
+        db = get_db()
+
+        return db.execute("""
+            SELECT *
+            FROM documents
+            WHERE status = ?
+            ORDER BY created_at DESC
+        """, (status,)).fetchall()
+
+    # =====================================================
+    # GET DOCUMENTS BY ASSIGNEE
+    # =====================================================
+    @staticmethod
+    def get_documents_by_assignee(user_id):
+
+        db = get_db()
+
+        return db.execute("""
+            SELECT *
+            FROM documents
+            WHERE assigned_to = ?
+            ORDER BY created_at DESC
+        """, (user_id,)).fetchall()
+
+
+    # =====================================================
+    # GET RECENT DOCUMENTS
+    # =====================================================
+    @staticmethod
+    def get_recent_documents(limit=5):
+
+        db = get_db()
+
+        return db.execute("""
+            SELECT *
+            FROM documents
+            ORDER BY created_at DESC
+            LIMIT ?
+        """, (limit,)).fetchall()
 
     # =====================================================
     # CREATE DOCUMENT
@@ -23,7 +76,9 @@ class DocumentModel:
         title,
         content,
         document_type,
-        created_by
+        created_by,
+        file_path='',
+        priority='normal'
     ):
 
         db = get_db()
@@ -33,14 +88,18 @@ class DocumentModel:
                 title,
                 content,
                 document_type,
-                created_by
+                created_by,
+                file_path,
+                priority
             )
-            VALUES (?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?)
         """, (
             title,
             content,
             document_type,
-            created_by
+            created_by,
+            file_path,
+            priority
         ))
 
         db.commit()
@@ -54,9 +113,15 @@ class DocumentModel:
         db = get_db()
 
         return db.execute("""
-            SELECT *
+            SELECT
+                documents.*,
+                users.username as creator_name
             FROM documents
-            ORDER BY created_at DESC
+
+            LEFT JOIN users
+            ON documents.created_by = users.id
+
+            ORDER BY documents.created_at DESC
         """).fetchall()
 
     # =====================================================
@@ -74,13 +139,61 @@ class DocumentModel:
         """, (document_id,)).fetchone()
 
     # =====================================================
-    # UPDATE DOCUMENT STATUS
+    # GET DOCUMENTS BY CREATOR
     # =====================================================
     @staticmethod
-    def update_document_status(
-        document_id,
-        status
-    ):
+    def get_documents_by_creator(user_id):
+
+        db = get_db()
+
+        return db.execute("""
+            SELECT *
+            FROM documents
+            WHERE created_by = ?
+            ORDER BY created_at DESC
+        """, (user_id,)).fetchall()
+
+    # =====================================================
+    # GET ASSIGNED DOCUMENTS
+    # =====================================================
+    @staticmethod
+    def get_assigned_documents(user_id):
+
+        db = get_db()
+
+        return db.execute("""
+            SELECT *
+            FROM documents
+            WHERE assigned_to = ?
+            ORDER BY created_at DESC
+        """, (user_id,)).fetchall()
+
+    # =====================================================
+    # SEARCH DOCUMENTS
+    # =====================================================
+    @staticmethod
+    def search_documents(keyword):
+
+        db = get_db()
+
+        return db.execute("""
+            SELECT *
+            FROM documents
+            WHERE
+                title LIKE ?
+                OR content LIKE ?
+                OR ai_summary LIKE ?
+        """, (
+            f'%{keyword}%',
+            f'%{keyword}%',
+            f'%{keyword}%'
+        )).fetchall()
+
+    # =====================================================
+    # UPDATE STATUS
+    # =====================================================
+    @staticmethod
+    def update_document_status(document_id, status):
 
         db = get_db()
 
@@ -98,13 +211,40 @@ class DocumentModel:
         db.commit()
 
     # =====================================================
+    # UPDATE AI RESULT
+    # =====================================================
+    @staticmethod
+    def update_ai_result(
+        document_id,
+        ocr_text,
+        ai_category,
+        ai_summary
+    ):
+
+        db = get_db()
+
+        db.execute("""
+            UPDATE documents
+            SET
+                ocr_text = ?,
+                ai_category = ?,
+                ai_summary = ?,
+                ai_processed = 1
+            WHERE id = ?
+        """, (
+            ocr_text,
+            ai_category,
+            ai_summary,
+            document_id
+        ))
+
+        db.commit()
+
+    # =====================================================
     # ASSIGN DOCUMENT
     # =====================================================
     @staticmethod
-    def assign_document(
-        document_id,
-        assigned_to
-    ):
+    def assign_document(document_id, assigned_to):
 
         db = get_db()
 
@@ -153,7 +293,7 @@ class DocumentModel:
         return result['total']
 
     # =====================================================
-    # COUNT DOCUMENTS BY STATUS
+    # COUNT BY STATUS
     # =====================================================
     @staticmethod
     def count_by_status(status):
@@ -167,3 +307,4 @@ class DocumentModel:
         """, (status,)).fetchone()
 
         return result['total']
+    

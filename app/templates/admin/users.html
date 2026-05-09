@@ -5,78 +5,354 @@ FILE: app/templates/admin/users.html
 {% extends "layouts/dashboard_layout.html" %}
 
 {% block page_title %}
-Quản lý User
+Quản lý Users
 {% endblock %}
 
 {% block sidebar %}
-<li><a href="/admin">📊 Dashboard</a></li>
-<li class="active"><a href="/admin/users">👥 Users</a></li>
-<li><a href="/admin/documents">📄 Documents</a></li>
-<li><a href="/admin/audit">📜 Audit Logs</a></li>
-<li><a href="/admin/settings">⚙️ Settings</a></li>
+<li>
+    <a href="/admin">
+        📊 Dashboard
+    </a>
+</li>
+
+<li class="active">
+    <a href="/admin/users">
+        👥 Users
+    </a>
+</li>
+
+<li>
+    <a href="/admin/documents">
+        📄 Documents
+    </a>
+</li>
+
+<li>
+    <a href="/admin/audit">
+        📜 Audit Logs
+    </a>
+</li>
+
+<li>
+    <a href="/admin/settings">
+        ⚙️ Settings
+    </a>
+</li>
 {% endblock %}
 
 {% block dashboard_content %}
 
+<!-- ===================================== -->
+<!-- HEADER -->
+<!-- ===================================== -->
 <div class="page-header">
 
     <h2>Danh sách người dùng</h2>
+    
+
+</div>
+<br>
+
+<form
+    method="GET"
+    action="/admin/users/search"
+>
+
+    <div class="filter-bar">
+
+        <input
+            type="text"
+            name="keyword"
+            placeholder="Tìm username, email..."
+        >
+
+        <button class="btn">
+            🔍 Search
+        </button>
+
+    </div>
+
+</form>
+
+<!-- ===================================== -->
+<!-- CREATE USER -->
+<!-- ===================================== -->
+<div class="card">
+
+    <h3>➕ Tạo tài khoản mới</h3>
+
+    <br>
+
+    <form
+        method="POST"
+        action="/admin/users/create"
+    >
+
+        <div class="filter-bar">
+
+            <input
+                type="text"
+                name="username"
+                placeholder="Username"
+                required
+            >
+
+            <input
+                type="password"
+                name="password"
+                placeholder="Password"
+                required
+            >
+
+        </div>
+
+        <div class="filter-bar">
+
+            <input
+                type="text"
+                name="full_name"
+                placeholder="Họ tên"
+            >
+
+            <input
+                type="email"
+                name="email"
+                placeholder="Email"
+            >
+
+            <input
+                type="text"
+                name="phone"
+                placeholder="Số điện thoại"
+            >
+            <select name="role">
+
+                <option value="employee">
+                    Employee
+                </option>
+
+                <option value="staff">
+                    Staff
+                </option>
+
+                <option value="admin">
+                    Admin
+                </option>
+
+            </select>
+
+        </div>
+
+        <button class="btn">
+            Tạo User
+        </button>
+
+    </form>
+
+</div>
+
+<br>
+
+{% if edit_user %}
+
+<div class="card">
+
+    <h3>✏️ Chỉnh sửa User</h3>
+
+    <br>
+
+<form
+    method="POST"
+    action="/admin/users/update/{{ edit_user.id }}"
+>
+
+    <div class="filter-bar">
+
+        <input
+            type="text"
+            name="username"
+            value="{{ edit_user.username }}"
+            placeholder="Username"
+            required
+        >
+
+        <input
+            type="text"
+            name="password"
+            value="{{ edit_user.password }}"
+            placeholder="Password"
+            required
+        >
+
+        <input
+            type="text"
+            name="full_name"
+            value="{{ edit_user.full_name }}"
+            placeholder="Họ tên"
+        >
+
+    </div>
+
+    <div class="filter-bar">
+
+        <input
+            type="email"
+            name="email"
+            value="{{ edit_user.email }}"
+            placeholder="Email"
+        >
+
+        <input
+            type="text"
+            name="phone"
+            value="{{ edit_user.phone }}"
+            placeholder="Số điện thoại"
+        >
+
+        <select name="role">
+
+            <option
+                value="employee"
+                {% if edit_user.role == 'employee' %}
+                selected
+                {% endif %}
+            >
+                Employee
+            </option>
+
+            <option
+                value="staff"
+                {% if edit_user.role == 'staff' %}
+                selected
+                {% endif %}
+            >
+                Staff
+            </option>
+
+            <option
+                value="admin"
+                {% if edit_user.role == 'admin' %}
+                selected
+                {% endif %}
+            >
+                Admin
+            </option>
+
+        </select>
+
+    </div>
 
     <button class="btn">
-        ➕ Thêm User
+        💾 Update User
     </button>
 
-</div>
-
-<div class="filter-bar">
-
-    <input type="text"
-           placeholder="🔍 Tìm kiếm user...">
-
-    <select>
-        <option>Tất cả role</option>
-        <option>Admin</option>
-        <option>Staff</option>
-        <option>Employee</option>
-    </select>
+</form>
 
 </div>
 
+<br>
+
+{% endif %}
+<!-- ===================================== -->
+<!-- USER TABLE -->
+<!-- ===================================== -->
 <table class="table">
 
     <thead>
 
         <tr>
+
             <th>ID</th>
+
             <th>Username</th>
+
+            <th>Password</th>
+
+            <th>Họ tên</th>
+
             <th>Role</th>
+
+            <th>Email</th>
+
             <th>Trạng thái</th>
+
             <th>Thao tác</th>
+
         </tr>
 
     </thead>
 
     <tbody>
 
+        {% for user in users %}
+
         <tr>
-            <td>1</td>
-            <td>admin</td>
-            <td>Admin</td>
+
+            <td>{{ user.id }}</td>
+
+            <td>{{ user.username }}</td>
+
+            <td>{{ user.password }}</td>
+
+            <td>{{ user.full_name }}</td>
+
+            <td>{{ user.role }}</td>
+
+            <td>{{ user.email }}</td>
+
             <td>
+
+                {% if user.is_active == 1 %}
+
                 <span class="status status-done">
                     Active
                 </span>
+
+                {% else %}
+
+                <span class="status status-pending">
+                    Disabled
+                </span>
+
+                {% endif %}
+
             </td>
+
             <td>
-                <button class="btn btn-warning">
+
+                <a
+                    href="/admin/users/edit/{{ user.id }}"
+                    class="btn"
+                >
                     Edit
+                </a>
+
+                {% if session['user_id'] != user.id %}
+
+                <a
+                    href="/admin/users/delete/{{ user.id }}"
+                    class="btn btn-danger"
+                    onclick="return confirm('Xóa user này?')"
+                >
+                    Delete
+                </a>
+
+                {% else %}
+
+                <button
+                    class="btn btn-danger"
+                    disabled
+                >
+                    Current Admin
                 </button>
 
-                <button class="btn btn-danger">
-                    Delete
-                </button>
+                {% endif %}
+
             </td>
+
         </tr>
+
+        {% endfor %}
 
     </tbody>
 

@@ -5,16 +5,43 @@ FILE: app/templates/layouts/auth_layout.html
 {% extends "layouts/base.html" %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+
+<link rel="stylesheet"
+      href="{{ url_for('static', filename='css/auth.css') }}">
+
 {% endblock %}
 
 {% block content %}
 
+<!-- TOP NAV -->
+<div class="auth-topbar">
+
+    <div class="auth-brand">
+
+        <h2>
+            📂 DocSys
+        </h2>
+
+        <p>
+            Hệ thống quản lý công văn,
+            tài liệu và quy trình xử lý văn bản thông minh
+        </p>
+
+    </div>
+
+</div>
+
+<!-- LOGIN AREA -->
 <div class="auth-container">
 
-    <div class="auth-box">
+    <div class="auth-form-wrapper">
 
-        {% block auth_content %}{% endblock %}
+        <div class="auth-box">
+
+            {% block auth_content %}
+            {% endblock %}
+
+        </div>
 
     </div>
 

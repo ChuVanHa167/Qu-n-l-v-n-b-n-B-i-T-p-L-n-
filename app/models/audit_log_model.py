@@ -1,25 +1,32 @@
 # =========================================================
 # FILE: app/models/audit_log_model.py
 # =========================================================
-# MỤC ĐÍCH:
-# - Ghi lịch sử thao tác hệ thống
-#
-# Ví dụ:
-# - Admin tạo user
-# - Staff xử lý văn bản
-# - User đăng nhập
-#
-# LỢI ÍCH:
-# - Theo dõi hệ thống
-# - Audit
-# - Debug
-# - Security
-# =========================================================
 
 from app.models.database import get_db
 
 
 class AuditLogModel:
+
+    # =====================================================
+    # GET RECENT LOGS
+    # =====================================================
+    @staticmethod
+    def get_recent_logs(limit=10):
+
+        db = get_db()
+
+        return db.execute("""
+            SELECT
+                audit_logs.*,
+                users.username
+            FROM audit_logs
+
+            LEFT JOIN users
+            ON audit_logs.user_id = users.id
+
+            ORDER BY audit_logs.created_at DESC
+            LIMIT ?
+        """, (limit,)).fetchall()
 
     # =====================================================
     # CREATE LOG
@@ -75,6 +82,35 @@ class AuditLogModel:
         """).fetchall()
 
     # =====================================================
+    # SEARCH LOGS
+    # =====================================================
+    @staticmethod
+    def search_logs(keyword):
+
+        db = get_db()
+
+        return db.execute("""
+            SELECT
+                audit_logs.*,
+                users.username
+            FROM audit_logs
+
+            LEFT JOIN users
+            ON audit_logs.user_id = users.id
+
+            WHERE
+                audit_logs.action LIKE ?
+                OR audit_logs.description LIKE ?
+                OR users.username LIKE ?
+
+            ORDER BY audit_logs.created_at DESC
+        """, (
+            f'%{keyword}%',
+            f'%{keyword}%',
+            f'%{keyword}%'
+        )).fetchall()
+
+    # =====================================================
     # GET LOGS BY USER
     # =====================================================
     @staticmethod
@@ -93,13 +129,16 @@ class AuditLogModel:
     # DELETE OLD LOGS
     # =====================================================
     @staticmethod
-    def delete_old_logs():
+    def delete_old_logs(days=30):
 
         db = get_db()
 
-        db.execute("""
+        db.execute(f"""
             DELETE FROM audit_logs
-            WHERE created_at <= datetime('now', '-30 days')
+            WHERE created_at <= datetime(
+                'now',
+                '-{days} days'
+            )
         """)
 
         db.commit()

@@ -1,39 +1,80 @@
+# =========================================================
+# FILE: app/__init__.py
+# =========================================================
+
 from flask import Flask
 
-# =========================
+# =========================================================
 # IMPORT DATABASE
-# =========================
+# =========================================================
 from app.models.database import init_database
 
+# =========================================================
+# IMPORT ROUTES
+# =========================================================
+from app.routes import ALL_BLUEPRINTS
 
-# =========================
-# IMPORT CONTROLLERS
-# =========================
-from app.controllers.auth_controller import auth_bp
-from app.controllers.admin_controller import admin_bp
-from app.controllers.staff_controller import staff_bp
-from app.controllers.employee_controller import employee_bp
-from app.controllers.document_controller import document_bp
+# =========================================================
+# IMPORT UTILS
+# =========================================================
+from app.utils.formatters import (
+    format_datetime,
+    format_role,
+    format_status
+)
+
+from app.utils.constants import SYSTEM_NAME
 
 
-# =========================
+# =========================================================
 # CREATE APP
-# =========================
+# =========================================================
 def create_app(config_object):
 
     app = Flask(__name__)
 
-    # load config
+    # =====================================================
+    # LOAD CONFIG
+    # =====================================================
     app.config.from_object(config_object)
 
-    # init database
+    # =====================================================
+    # INIT DATABASE
+    # =====================================================
     init_database(app)
 
-    # register blueprints
-    app.register_blueprint(auth_bp)
-    app.register_blueprint(admin_bp)
-    app.register_blueprint(staff_bp)
-    app.register_blueprint(employee_bp)
-    app.register_blueprint(document_bp)
+    # =====================================================
+    # REGISTER BLUEPRINTS
+    # =====================================================
+    for blueprint in ALL_BLUEPRINTS:
+        app.register_blueprint(blueprint)
+
+    # =====================================================
+    # REGISTER JINJA FILTERS
+    # =====================================================
+    app.jinja_env.filters['datetime'] = format_datetime
+    app.jinja_env.filters['role'] = format_role
+    app.jinja_env.filters['status'] = format_status
+
+    # =====================================================
+    # GLOBAL TEMPLATE VARIABLES
+    # =====================================================
+    @app.context_processor
+    def inject_global_variables():
+
+        return {
+            "SYSTEM_NAME": SYSTEM_NAME
+        }
+
+    # =====================================================
+    # HOME TEST ROUTE
+    # =====================================================
+    @app.route('/health')
+    def health_check():
+
+        return {
+            "status": "success",
+            "message": "System running"
+        }
 
     return app

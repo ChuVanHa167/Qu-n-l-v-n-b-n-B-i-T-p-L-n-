@@ -5,8 +5,13 @@ FILE: app/templates/layouts/dashboard_layout.html
 {% extends "layouts/base.html" %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+
+<link rel="stylesheet"
+      href="{{ url_for('static', filename='css/dashboard.css') }}">
+
+<link rel="stylesheet"
+      href="{{ url_for('static', filename='css/admin.css') }}">
+
 {% endblock %}
 
 {% block content %}
@@ -14,44 +19,100 @@ FILE: app/templates/layouts/dashboard_layout.html
 <div class="app">
 
     <!-- SIDEBAR -->
-    <div class="sidebar">
+    <aside class="sidebar">
 
-        <h2 class="logo">📂 DocSys</h2>
+        <!-- LOGO -->
+        <div class="sidebar-top">
 
+            <h2 class="logo">
+                📂 DocSys
+            </h2>
+
+            <p class="sidebar-role">
+                {{ session.role|upper }}
+            </p>
+
+        </div>
+
+        <!-- MENU -->
         <ul class="menu">
-            {% block sidebar %}{% endblock %}
+
+            {% block sidebar %}
+            {% endblock %}
+
         </ul>
 
-    </div>
+        <!-- USER -->
+        <div class="sidebar-user">
+
+            <div class="user-avatar">
+
+                {{ session.username[0]|upper }}
+
+            </div>
+
+            <div class="user-info">
+
+                <strong>
+                    {{ session.username }}
+                </strong>
+
+                <span>
+                    {{ session.role }}
+                </span>
+
+            </div>
+
+        </div>
+
+    </aside>
 
     <!-- MAIN -->
-    <div class="main">
+    <main class="main">
 
         <!-- NAVBAR -->
         <div class="navbar">
 
-            <h3>{% block page_title %}{% endblock %}</h3>
+            <h3 class="page-title">
+                {% block page_title %}
+                {% endblock %}
+            </h3>
 
-            <div>
-                👤 {{ session['user'] }}
-                |
-                <a href="/logout">Đăng xuất</a>
+            <div class="navbar-right">
+
+                <a href="/notifications"
+                   class="notification-btn">
+
+                    🔔
+
+                </a>
+
+                <a href="/logout"
+                   class="btn btn-danger btn-sm">
+
+                    Đăng xuất
+
+                </a>
+
             </div>
 
         </div>
 
         <!-- CONTENT -->
         <div class="content">
-            {% block dashboard_content %}{% endblock %}
+
+            {% block dashboard_content %}
+            {% endblock %}
+
         </div>
 
-    </div>
+    </main>
 
 </div>
 
-<!-- JS -->
 <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
 
-{% block extra_js %}{% endblock %}
+{% block extra_js %}
+{% endblock %}
 
 {% endblock %}

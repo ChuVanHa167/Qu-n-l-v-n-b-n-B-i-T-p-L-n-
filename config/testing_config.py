@@ -3,25 +3,39 @@
 # =========================================================
 
 """
-Testing Config
---------------
+=========================================================
+TESTING CONFIG
+=========================================================
+
 Môi trường test tự động.
 
 Dùng khi:
-- unit test
-- integration test
+- Unit test
+- Integration test
 - CI/CD
 
 ĐẶC ĐIỂM:
-- database riêng
+- Database riêng
 - TESTING bật
-- không ảnh hưởng dữ liệu thật
+- Không ảnh hưởng dữ liệu thật
+=========================================================
 """
 
 import os
 
 
 class TestingConfig:
+
+    # =====================================================
+    # BASE DIRECTORY
+    # =====================================================
+    BASE_DIR = os.path.abspath(
+        os.path.dirname(__file__)
+    )
+
+    PROJECT_ROOT = os.path.abspath(
+        os.path.join(BASE_DIR, "..")
+    )
 
     # =====================================================
     # FLASK CORE
@@ -32,16 +46,13 @@ class TestingConfig:
 
     SECRET_KEY = "testing_secret_key"
 
+    JSON_AS_ASCII = False
+
     # =====================================================
     # DATABASE
     # =====================================================
-    BASE_DIR = os.path.abspath(
-        os.path.dirname(__file__)
-    )
-
     DATABASE = os.path.join(
-        BASE_DIR,
-        "..",
+        PROJECT_ROOT,
         "database",
         "testing.db"
     )
@@ -53,15 +64,17 @@ class TestingConfig:
 
     SESSION_COOKIE_HTTPONLY = True
 
+    SESSION_COOKIE_SECURE = False
+
     # =====================================================
     # SECURITY
     # =====================================================
     WTF_CSRF_ENABLED = False
 
     # =====================================================
-    # APP INFO
+    # APPLICATION INFO
     # =====================================================
-    APP_NAME = "Document Management System"
+    APP_NAME = "Smart Document Management System"
 
     APP_VERSION = "1.0 Testing"
 
@@ -72,12 +85,18 @@ class TestingConfig:
 
     DOCUMENTS_PER_PAGE = 5
 
+    LOGS_PER_PAGE = 10
+
     # =====================================================
     # FILE UPLOAD
     # =====================================================
     MAX_CONTENT_LENGTH = 8 * 1024 * 1024
 
-    UPLOAD_FOLDER = "tests/uploads"
+    UPLOAD_FOLDER = os.path.join(
+        PROJECT_ROOT,
+        "tests",
+        "uploads"
+    )
 
     # =====================================================
     # LOGGING

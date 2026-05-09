@@ -1,26 +1,17 @@
 # =========================================================
 # FILE: app/controllers/document_controller.py
 # =========================================================
-# MỤC ĐÍCH:
-# - Xử lý document chung
-#
-# DOCUMENT:
-# - View detail
-# - Update status
-# - Assign document
-#
-# SOLID:
-# - Tách riêng document logic
-# =========================================================
 
 from flask import Blueprint
 from flask import render_template
 from flask import request
 from flask import redirect
 from flask import session
+from flask import flash
 
 from app.models.document_model import DocumentModel
 from app.models.audit_log_model import AuditLogModel
+from app.models.user_model import UserModel
 
 
 document_bp = Blueprint(
@@ -50,9 +41,14 @@ def document_detail(document_id):
         document_id
     )
 
+    comments = DocumentModel.get_document_comments(
+        document_id
+    )
+
     return render_template(
         'documents/detail.html',
-        document=document
+        document=document,
+        comments=comments
     )
 
 
@@ -70,9 +66,19 @@ def update_status(document_id):
 
     status = request.form.get('status')
 
+    note = request.form.get('note')
+
     DocumentModel.update_document_status(
         document_id,
         status
+    )
+
+    # lưu lịch sử phê duyệt
+    DocumentModel.create_approval_history(
+        document_id=document_id,
+        action=status,
+        note=note,
+        processed_by=session['user_id']
     )
 
     AuditLogModel.create_log(
@@ -83,7 +89,19 @@ def update_status(document_id):
         f"Cập nhật trạng thái thành {status}"
     )
 
-    return redirect('/admin/documents')
+    flash('Cập nhật trạng thái thành công')
+
+    # redirect theo role
+    role = session.get('role')
+
+    if role == 'admin':
+        return redirect('/admin/documents')
+
+    elif role == 'staff':
+        return redirect('/staff/processing-documents')
+
+    else:
+        return redirect('/employee/my-documents')
 
 
 # =========================================================
@@ -98,7 +116,9 @@ def assign_document(document_id):
     if not check_login():
         return redirect('/')
 
-    assigned_to = request.form.get('assigned_to')
+    assigned_to = request.form.get(
+        'assigned_to'
+    )
 
     DocumentModel.assign_document(
         document_id,
@@ -113,4 +133,104 @@ def assign_document(document_id):
         'Phân công xử lý văn bản'
     )
 
+    flash('Phân công thành công')
+
     return redirect('/admin/documents')
+
+
+# =========================================================
+# APPROVE DOCUMENT
+# =========================================================
+@document_bp.route(
+    '/documents/approve/<int:document_id>'
+)
+def approve_document(document_id):
+
+    if not check_login():
+        return redirect('/')
+
+    DocumentModel.update_document_status(
+        document_id,
+        'approved'
+    )
+
+    AuditLogModel.create_log(
+        session['user_id'],
+        'APPROVE_DOCUMENT',
+        'DOCUMENT',
+        document_id,
+        'Duyệt văn bản'
+    )
+
+    flash('Đã duyệt văn bản')
+
+    return redirect('/staff/processing-documents')
+
+
+# =========================================================
+# REJECT DOCUMENT
+# =========================================================
+@document_bp.route(
+    '/documents/reject/<int:document_id>',
+    methods=['POST']
+)
+def reject_document(document_id):
+
+    if not check_login():
+        return redirect('/')
+
+    reason = request.form.get('reason')
+
+    DocumentModel.reject_document(
+        document_id,
+        reason
+    )
+
+    AuditLogModel.create_log(
+        session['user_id'],
+        'REJECT_DOCUMENT',
+        'DOCUMENT',
+        document_id,
+        'Từ chối văn bản'
+    )
+
+    flash('Đã từ chối văn bản')
+
+    return redirect('/staff/processing-documents')
+
+
+# =========================================================
+# ADD COMMENT
+# =========================================================
+@document_bp.route(
+    '/documents/comment/<int:document_id>',
+    methods=['POST']
+)
+def add_comment(document_id):
+
+    if not check_login():
+        return redirect('/')
+
+    comment = request.form.get(
+        'comment'
+    )
+
+    DocumentModel.add_comment(
+        document_id,
+        session['user_id'],
+        comment
+    )
+
+    AuditLogModel.create_log(
+        session['user_id'],
+        'COMMENT_DOCUMENT',
+        'DOCUMENT',
+        document_id,
+        'Bình luận văn bản'
+    )
+
+    flash('Đã thêm bình luận')
+
+    return redirect(
+        f'/documents/{document_id}'
+    )

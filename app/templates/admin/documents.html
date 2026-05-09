@@ -9,90 +9,210 @@ Quản lý văn bản
 {% endblock %}
 
 {% block sidebar %}
-<li><a href="/admin">📊 Dashboard</a></li>
-<li><a href="/admin/users">👥 Users</a></li>
-<li class="active"><a href="/admin/documents">📄 Documents</a></li>
-<li><a href="/admin/audit">📜 Audit Logs</a></li>
-<li><a href="/admin/settings">⚙️ Settings</a></li>
+<li>
+    <a href="/admin">
+        📊 Dashboard
+    </a>
+</li>
+
+<li>
+    <a href="/admin/users">
+        👥 Users
+    </a>
+</li>
+
+<li class="active">
+    <a href="/admin/documents">
+        📄 Documents
+    </a>
+</li>
+
+<li>
+    <a href="/admin/audit">
+        📜 Audit Logs
+    </a>
+</li>
+
+<li>
+    <a href="/admin/settings">
+        ⚙️ Settings
+    </a>
+</li>
 {% endblock %}
 
 {% block dashboard_content %}
 
+<!-- ===================================== -->
+<!-- HEADER -->
+<!-- ===================================== -->
 <div class="page-header">
 
     <h2>Danh sách văn bản</h2>
 
-    <button class="btn">
-        ➕ Tạo văn bản
-    </button>
+</div>
+
+<!-- ===================================== -->
+<!-- CREATE DOCUMENT -->
+<!-- ===================================== -->
+<div class="card">
+
+    <h3>➕ Tạo văn bản mới</h3>
+
+    <br>
+
+    <form
+        method="POST"
+        action="/admin/documents/create"
+    >
+
+        <input
+            type="text"
+            name="title"
+            placeholder="Tiêu đề văn bản"
+            required
+        >
+
+        <br><br>
+
+        <textarea
+            name="content"
+            rows="6"
+            placeholder="Nội dung văn bản"
+        ></textarea>
+
+        <br><br>
+
+        <div class="filter-bar">
+
+            <select name="document_type">
+
+                <option value="incoming">
+                    Công văn đến
+                </option>
+
+                <option value="outgoing">
+                    Công văn đi
+                </option>
+
+                <option value="decision">
+                    Quyết định
+                </option>
+
+                <option value="plan">
+                    Kế hoạch
+                </option>
+
+            </select>
+
+            <button class="btn">
+                Tạo văn bản
+            </button>
+
+        </div>
+
+    </form>
 
 </div>
 
+<br>
+
+<!-- ===================================== -->
+<!-- FILTER -->
+<!-- ===================================== -->
 <div class="filter-bar">
 
-    <input type="text"
-           id="documentSearch"
-           placeholder="🔍 Tìm kiếm văn bản">
-
-    <select>
-        <option>Tất cả trạng thái</option>
-        <option>Pending</option>
-        <option>Processing</option>
-        <option>Done</option>
-    </select>
+    <input
+        type="text"
+        id="documentSearch"
+        placeholder="🔍 Tìm kiếm văn bản"
+    >
 
 </div>
 
+<!-- ===================================== -->
+<!-- TABLE -->
+<!-- ===================================== -->
 <table class="table">
 
     <thead>
 
         <tr>
+
             <th>ID</th>
+
             <th>Tiêu đề</th>
+
             <th>Loại</th>
+
             <th>Trạng thái</th>
-            <th>Người tạo</th>
+
+            <th>Ngày tạo</th>
+
             <th>Thao tác</th>
+
         </tr>
 
     </thead>
 
     <tbody>
 
+        {% for document in documents %}
+
         <tr>
 
-            <td>1</td>
+            <td>{{ document.id }}</td>
 
-            <td>Công văn 001</td>
+            <td>{{ document.title }}</td>
 
-            <td>Incoming</td>
+            <td>{{ document.document_type }}</td>
 
             <td>
+
+                {% if document.status == 'pending' %}
+
+                <span class="status status-pending">
+                    Pending
+                </span>
+
+                {% elif document.status == 'processing' %}
+
                 <span class="status status-processing">
                     Processing
                 </span>
+
+                {% else %}
+
+                <span class="status status-done">
+                    Completed
+                </span>
+
+                {% endif %}
+
             </td>
 
-            <td>admin</td>
+            <td>{{ document.created_at }}</td>
 
             <td>
 
-                <button class="btn btn-success">
+                <a
+                    href="/documents/{{ document.id }}"
+                    class="btn btn-success"
+                >
                     View
-                </button>
+                </a>
 
-                <button class="btn btn-warning">
-                    Edit
-                </button>
-
-                <button class="btn btn-danger btn-delete">
+                <a
+                    href="/admin/documents/delete/{{ document.id }}"
+                    class="btn btn-danger btn-delete"
+                >
                     Delete
-                </button>
+                </a>
 
             </td>
 
         </tr>
+
+        {% endfor %}
 
     </tbody>
 

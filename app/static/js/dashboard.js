@@ -2,27 +2,85 @@
 // FILE: app/static/js/dashboard.js
 // =========================================
 
-// SIDEBAR ACTIVE
-const menuItems = document.querySelectorAll(".menu li");
+// =========================================
+// ACTIVE SIDEBAR MENU
+// =========================================
+const menuLinks = document.querySelectorAll(".menu li a");
 
-menuItems.forEach(item => {
-    item.addEventListener("click", () => {
+menuLinks.forEach(link => {
 
-        menuItems.forEach(i => {
-            i.classList.remove("active");
-        });
+    if(link.href === window.location.href){
 
-        item.classList.add("active");
-    });
+        link.parentElement.classList.add("active");
+    }
+
 });
 
+// =========================================
+// AUTO CLOSE ALERT
+// =========================================
+const alerts = document.querySelectorAll(".alert");
 
-// ALERT AUTO CLOSE
-const alertBox = document.querySelector(".alert");
-
-if(alertBox){
+alerts.forEach(alert => {
 
     setTimeout(() => {
-        alertBox.style.display = "none";
+
+        alert.style.opacity = "0";
+
+        setTimeout(() => {
+            alert.remove();
+        }, 500);
+
     }, 3000);
+
+});
+
+// =========================================
+// TOGGLE SIDEBAR MOBILE
+// =========================================
+const toggleButton = document.querySelector("#sidebarToggle");
+
+if(toggleButton){
+
+    toggleButton.addEventListener("click", () => {
+
+        document
+            .querySelector(".sidebar")
+            .classList.toggle("show");
+
+    });
+
 }
+
+// =========================================
+// SIMPLE COUNTER ANIMATION
+// =========================================
+const counters = document.querySelectorAll(".stats-card h2");
+
+counters.forEach(counter => {
+
+    const target = Number(counter.innerText);
+
+    let current = 0;
+
+    const increment = Math.ceil(target / 30);
+
+    const updateCounter = () => {
+
+        current += increment;
+
+        if(current >= target){
+
+            counter.innerText = target;
+
+        }else{
+
+            counter.innerText = current;
+
+            setTimeout(updateCounter, 30);
+        }
+    };
+
+    updateCounter();
+
+});

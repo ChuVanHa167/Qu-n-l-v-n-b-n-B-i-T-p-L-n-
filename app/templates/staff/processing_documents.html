@@ -9,6 +9,7 @@ Văn bản đang xử lý
 {% endblock %}
 
 {% block sidebar %}
+
 <li>
     <a href="/staff">
         📊 Dashboard
@@ -26,75 +27,151 @@ Văn bản đang xử lý
         ⚙️ Đang xử lý
     </a>
 </li>
+
 {% endblock %}
 
 {% block dashboard_content %}
 
-<h2>Danh sách văn bản đang xử lý</h2>
+<div class="page-header">
 
-<br>
+    <div>
+
+        <h2>Danh sách văn bản đang xử lý</h2>
+
+        <p class="text-muted">
+            Quản lý tiến độ xử lý công việc
+        </p>
+
+    </div>
+
+</div>
 
 <div class="filter-bar">
 
     <input type="text"
+           id="documentSearch"
            placeholder="🔍 Tìm kiếm văn bản">
 
     <select>
-        <option>Processing</option>
-        <option>Done</option>
+
+        <option value="">
+            Tất cả trạng thái
+        </option>
+
+        <option value="processing">
+            Processing
+        </option>
+
+        <option value="completed">
+            Completed
+        </option>
+
     </select>
 
 </div>
 
-<table class="table">
+<div class="card">
 
-    <thead>
+    <table class="table">
 
-        <tr>
-            <th>ID</th>
-            <th>Tiêu đề</th>
-            <th>Loại</th>
-            <th>Tiến độ</th>
-            <th>Deadline</th>
-            <th>Thao tác</th>
-        </tr>
+        <thead>
 
-    </thead>
+            <tr>
+                <th>ID</th>
+                <th>Tiêu đề</th>
+                <th>Loại</th>
+                <th>Ưu tiên</th>
+                <th>Trạng thái</th>
+                <th>Ngày cập nhật</th>
+                <th>Thao tác</th>
+            </tr>
 
-    <tbody>
+        </thead>
 
-        <tr>
+        <tbody>
 
-            <td>8</td>
+            {% if documents %}
 
-            <td>Hồ sơ nội bộ</td>
+                {% for doc in documents %}
 
-            <td>Incoming</td>
+                <tr>
 
-            <td>
-                <span class="status status-processing">
-                    Processing
-                </span>
-            </td>
+                    <td>#{{ doc.id }}</td>
 
-            <td>30/04/2026</td>
+                    <td>{{ doc.title }}</td>
 
-            <td>
+                    <td>
+                        {{ doc.document_type }}
+                    </td>
 
-                <button class="btn btn-warning">
-                    Cập nhật
-                </button>
+                    <td>
+                        {{ doc.priority }}
+                    </td>
 
-                <button class="btn btn-success">
-                    Hoàn thành
-                </button>
+                    <td>
 
-            </td>
+                        <span class="
+                            status
+                            status-{{ doc.status }}
+                        ">
+                            {{ doc.status }}
+                        </span>
 
-        </tr>
+                    </td>
 
-    </tbody>
+                    <td>
+                        {{ doc.updated_at }}
+                    </td>
 
-</table>
+                    <td class="action-buttons">
 
+                        <a href="/documents/{{ doc.id }}"
+                           class="btn btn-success btn-sm">
+                            View
+                        </a>
+
+                        <form method="POST"
+                              action="/documents/update-status/{{ doc.id }}">
+
+                            <input type="hidden"
+                                   name="status"
+                                   value="completed">
+
+                            <button class="btn btn-primary btn-sm">
+                                Hoàn thành
+                            </button>
+
+                        </form>
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            {% else %}
+
+                <tr>
+
+                    <td colspan="7"
+                        class="text-center">
+
+                        Không có văn bản đang xử lý
+
+                    </td>
+
+                </tr>
+
+            {% endif %}
+
+        </tbody>
+
+    </table>
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/document.js') }}"></script>
 {% endblock %}

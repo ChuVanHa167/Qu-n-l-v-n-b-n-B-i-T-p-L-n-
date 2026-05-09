@@ -1,13 +1,6 @@
 # =========================================================
 # FILE: app/controllers/employee_controller.py
 # =========================================================
-# MỤC ĐÍCH:
-# - Dashboard nhân viên thường
-#
-# EMPLOYEE:
-# - Xem văn bản cá nhân
-# - Theo dõi trạng thái
-# =========================================================
 
 from flask import Blueprint
 from flask import render_template
@@ -43,12 +36,40 @@ def employee_dashboard():
     if not check_employee():
         return redirect('/')
 
-    documents = DocumentModel.get_all_documents()
+    total_documents = DocumentModel.count_documents()
+
+    pending_documents = DocumentModel.count_by_status(
+        'pending'
+    )
+
+    approved_documents = DocumentModel.count_by_status(
+        'approved'
+    )
+
+    rejected_documents = DocumentModel.count_by_status(
+        'rejected'
+    )
+
+    recent_documents = (
+        DocumentModel.get_documents_by_creator(
+            session['user_id']
+        )
+    )
 
     return render_template(
         'employee/dashboard.html',
-        documents=documents
+        processing_documents=0,
+        total_documents=total_documents,
+
+        pending_documents=pending_documents,
+
+        approved_documents=approved_documents,
+
+        rejected_documents=rejected_documents,
+
+        recent_documents=recent_documents
     )
+
 
 # =========================================================
 # MY DOCUMENTS
@@ -59,7 +80,11 @@ def my_documents():
     if not check_employee():
         return redirect('/')
 
-    documents = DocumentModel.get_all_documents()
+    documents = (
+        DocumentModel.get_documents_by_creator(
+            session['user_id']
+        )
+    )
 
     return render_template(
         'employee/my_documents.html',

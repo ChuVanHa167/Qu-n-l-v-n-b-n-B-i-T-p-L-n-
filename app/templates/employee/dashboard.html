@@ -9,6 +9,7 @@ Employee Dashboard
 {% endblock %}
 
 {% block sidebar %}
+
 <li class="active">
     <a href="/employee">
         📊 Dashboard
@@ -20,59 +21,177 @@ Employee Dashboard
         📄 Văn bản của tôi
     </a>
 </li>
+
 {% endblock %}
 
 {% block dashboard_content %}
 
-<div class="alert">
-    📢 Bạn có 3 văn bản cần theo dõi
+<!-- PAGE HEADER -->
+<div class="page-header">
+
+    <div>
+        <h2>Xin chào {{ session.username }}</h2>
+        <p class="text-muted">
+            Theo dõi tiến độ xử lý văn bản cá nhân
+        </p>
+    </div>
+
+    <a href="/employee/my-documents" class="btn">
+        📄 Xem văn bản
+    </a>
+
 </div>
 
+<!-- ALERT -->
+{% if processing_documents > 0 %}
+<div class="alert">
+    📢 Bạn có {{ processing_documents }} văn bản đang xử lý
+</div>
+{% endif %}
+
+<!-- STATS -->
 <div class="cards">
 
     <div class="stats-card">
         <p>Đã gửi</p>
-        <h2>12</h2>
+        <h2>{{ total_documents }}</h2>
     </div>
 
     <div class="stats-card">
         <p>Đang xử lý</p>
-        <h2>4</h2>
+        <h2>{{ processing_documents }}</h2>
     </div>
 
     <div class="stats-card">
         <p>Hoàn thành</p>
-        <h2>8</h2>
+        <h2>{{ completed_documents }}</h2>
+    </div>
+
+    <div class="stats-card">
+        <p>Chờ duyệt</p>
+        <h2>{{ pending_documents }}</h2>
     </div>
 
 </div>
 
+<!-- CHART -->
 <div class="chart-box">
 
-    <h3>📈 Tiến độ xử lý văn bản</h3>
+    <div class="chart-header">
+        <h3>📈 Tiến độ xử lý văn bản</h3>
+    </div>
 
     <div class="fake-chart"></div>
 
 </div>
 
-<br>
+<!-- RECENT DOCUMENTS -->
+<div class="card mt-20">
 
-<h2>Thông báo gần đây</h2>
+    <div class="table-header">
 
-<ul class="timeline">
+        <h3>📄 Văn bản gần đây</h3>
 
-    <li>
-        Văn bản CV001 đã được tiếp nhận
-    </li>
+        <a href="/employee/my-documents"
+           class="btn btn-sm">
+            Xem tất cả
+        </a>
 
-    <li>
-        Văn bản CV002 đang xử lý
-    </li>
+    </div>
 
-    <li>
-        Văn bản CV003 đã hoàn thành
-    </li>
+    <table class="table">
 
-</ul>
+        <thead>
+
+            <tr>
+                <th>ID</th>
+                <th>Tiêu đề</th>
+                <th>Loại</th>
+                <th>Trạng thái</th>
+                <th>Ngày tạo</th>
+            </tr>
+
+        </thead>
+
+        <tbody>
+
+            {% if documents %}
+
+                {% for doc in documents[:5] %}
+
+                <tr>
+
+                    <td>#{{ doc.id }}</td>
+
+                    <td>
+                        {{ doc.title }}
+                    </td>
+
+                    <td>
+                        {{ doc.document_type or '---' }}
+                    </td>
+
+                    <td>
+
+                        <span class="
+                            status
+                            status-{{ doc.status }}
+                        ">
+                            {{ doc.status }}
+                        </span>
+
+                    </td>
+
+                    <td>
+                        {{ doc.created_at }}
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            {% else %}
+
+                <tr>
+
+                    <td colspan="5"
+                        class="text-center">
+
+                        Chưa có văn bản nào
+
+                    </td>
+
+                </tr>
+
+            {% endif %}
+
+        </tbody>
+
+    </table>
+
+</div>
+
+<!-- TIMELINE -->
+<div class="card mt-20">
+
+    <h3>🕒 Hoạt động gần đây</h3>
+
+    <ul class="timeline">
+
+        <li>
+            Văn bản đã gửi đang chờ duyệt
+        </li>
+
+        <li>
+            Có văn bản mới được cập nhật trạng thái
+        </li>
+
+        <li>
+            Hệ thống đã tiếp nhận yêu cầu của bạn
+        </li>
+
+    </ul>
+
+</div>
 
 {% endblock %}

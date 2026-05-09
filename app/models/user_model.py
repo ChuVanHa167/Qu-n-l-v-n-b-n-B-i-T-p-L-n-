@@ -1,27 +1,26 @@
 # =========================================================
 # FILE: app/models/user_model.py
 # =========================================================
-# MỤC ĐÍCH:
-# - Quản lý toàn bộ dữ liệu USERS
-#
-# NGUYÊN TẮC:
-# - Model chỉ thao tác DB
-# - Không xử lý business logic
-# - Không render giao diện
-#
-# SOLID:
-# - SRP:
-#   File này CHỈ xử lý user
-#
-# - OCP:
-#   Có thể thêm method mới
-#   mà không phá code cũ
-# =========================================================
 
 from app.models.database import get_db
 
 
 class UserModel:
+
+    # =====================================================
+    # COUNT USERS
+    # =====================================================
+    @staticmethod
+    def count_users():
+
+        db = get_db()
+
+        result = db.execute("""
+            SELECT COUNT(*) as total
+            FROM users
+        """).fetchone()
+
+        return result['total']
 
     # =====================================================
     # CREATE USER
@@ -33,7 +32,8 @@ class UserModel:
         role,
         full_name='',
         email='',
-        phone=''
+        phone='',
+        department_id=None
     ):
 
         db = get_db()
@@ -45,22 +45,24 @@ class UserModel:
                 role,
                 full_name,
                 email,
-                phone
+                phone,
+                department_id
             )
-            VALUES (?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
         """, (
             username,
             password,
             role,
             full_name,
             email,
-            phone
+            phone,
+            department_id
         ))
 
         db.commit()
 
     # =====================================================
-    # FIND USER BY USERNAME
+    # FIND BY USERNAME
     # =====================================================
     @staticmethod
     def find_by_username(username):
@@ -74,7 +76,7 @@ class UserModel:
         """, (username,)).fetchone()
 
     # =====================================================
-    # FIND USER BY ID
+    # FIND BY ID
     # =====================================================
     @staticmethod
     def find_by_id(user_id):
@@ -88,14 +90,12 @@ class UserModel:
         """, (user_id,)).fetchone()
 
     # =====================================================
-    # CHECK USER EXISTS
+    # USER EXISTS
     # =====================================================
     @staticmethod
     def user_exists(username):
 
-        user = UserModel.find_by_username(username)
-
-        return user is not None
+        return UserModel.find_by_username(username) is not None
 
     # =====================================================
     # GET ALL USERS
@@ -106,13 +106,68 @@ class UserModel:
         db = get_db()
 
         return db.execute("""
-            SELECT *
+            SELECT
+                users.*,
+                departments.name as department_name
             FROM users
-            ORDER BY created_at DESC
+
+            LEFT JOIN departments
+            ON users.department_id = departments.id
+
+            ORDER BY users.created_at DESC
         """).fetchall()
 
     # =====================================================
-    # UPDATE USER ROLE
+    # GET STAFF USERS
+    # =====================================================
+    @staticmethod
+    def get_staff_users():
+
+        db = get_db()
+
+        return db.execute("""
+            SELECT *
+            FROM users
+            WHERE role = 'staff'
+        """).fetchall()
+
+    # =====================================================
+    # GET MANAGERS
+    # =====================================================
+    @staticmethod
+    def get_managers():
+
+        db = get_db()
+
+        return db.execute("""
+            SELECT *
+            FROM users
+            WHERE role = 'manager'
+        """).fetchall()
+
+    # =====================================================
+    # SEARCH USERS
+    # =====================================================
+    @staticmethod
+    def search_users(keyword):
+
+        db = get_db()
+
+        return db.execute("""
+            SELECT *
+            FROM users
+            WHERE
+                username LIKE ?
+                OR full_name LIKE ?
+                OR email LIKE ?
+        """, (
+            f'%{keyword}%',
+            f'%{keyword}%',
+            f'%{keyword}%'
+        )).fetchall()
+
+    # =====================================================
+    # UPDATE ROLE
     # =====================================================
     @staticmethod
     def update_role(user_id, role):
@@ -131,7 +186,7 @@ class UserModel:
         db.commit()
 
     # =====================================================
-    # UPDATE USER STATUS
+    # UPDATE STATUS
     # =====================================================
     @staticmethod
     def update_status(user_id, is_active):
@@ -157,6 +212,35 @@ class UserModel:
 
         db = get_db()
 
+        # ==============================
+        # XÓA LOG LIÊN QUAN USER
+        # ==============================
+        db.execute("""
+            DELETE FROM audit_logs
+            WHERE user_id = ?
+        """, (user_id,))
+
+        # ==============================
+        # GỠ NGƯỜI ĐƯỢC ASSIGN
+        # ==============================
+        db.execute("""
+            UPDATE documents
+            SET assigned_to = NULL
+            WHERE assigned_to = ?
+        """, (user_id,))
+
+        # ==============================
+        # GỠ NGƯỜI TẠO DOCUMENT
+        # ==============================
+        db.execute("""
+            UPDATE documents
+            SET created_by = NULL
+            WHERE created_by = ?
+        """, (user_id,))
+
+        # ==============================
+        # XÓA USER
+        # ==============================
         db.execute("""
             DELETE FROM users
             WHERE id = ?
@@ -165,16 +249,39 @@ class UserModel:
         db.commit()
 
     # =====================================================
-    # COUNT USERS
+    # UPDATE USER FULL INFO
     # =====================================================
     @staticmethod
-    def count_users():
+    def update_user(
+        user_id,
+        username,
+        password,
+        full_name,
+        email,
+        phone,
+        role
+    ):
 
         db = get_db()
 
-        result = db.execute("""
-            SELECT COUNT(*) as total
-            FROM users
-        """).fetchone()
+        db.execute("""
+            UPDATE users
+            SET
+                username = ?,
+                password = ?,
+                full_name = ?,
+                email = ?,
+                phone = ?,
+                role = ?
+            WHERE id = ?
+        """, (
+            username,
+            password,
+            full_name,
+            email,
+            phone,
+            role,
+            user_id
+        ))
 
-        return result['total']
+        db.commit()

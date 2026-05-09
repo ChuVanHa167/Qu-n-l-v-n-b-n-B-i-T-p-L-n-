@@ -9,6 +9,7 @@ Văn bản được giao
 {% endblock %}
 
 {% block sidebar %}
+
 <li>
     <a href="/staff">
         📊 Dashboard
@@ -26,72 +27,155 @@ Văn bản được giao
         ⚙️ Đang xử lý
     </a>
 </li>
+
 {% endblock %}
 
 {% block dashboard_content %}
 
-<h2>Danh sách văn bản được giao</h2>
+<div class="page-header">
 
-<br>
+    <div>
+
+        <h2>Danh sách văn bản được giao</h2>
+
+        <p class="text-muted">
+            Theo dõi và tiếp nhận văn bản xử lý
+        </p>
+
+    </div>
+
+</div>
 
 <div class="filter-bar">
 
     <input type="text"
-           placeholder="🔍 Tìm kiếm">
+           id="documentSearch"
+           placeholder="🔍 Tìm kiếm văn bản">
 
     <select>
-        <option>Tất cả</option>
-        <option>Incoming</option>
-        <option>Outgoing</option>
+
+        <option value="">
+            Tất cả loại
+        </option>
+
+        <option value="incoming">
+            Incoming
+        </option>
+
+        <option value="outgoing">
+            Outgoing
+        </option>
+
+        <option value="internal">
+            Internal
+        </option>
+
     </select>
 
 </div>
 
-<table class="table">
+<div class="card">
 
-    <thead>
+    <table class="table">
 
-        <tr>
-            <th>ID</th>
-            <th>Tiêu đề</th>
-            <th>Người tạo</th>
-            <th>Ngày giao</th>
-            <th>Trạng thái</th>
-            <th>Thao tác</th>
-        </tr>
+        <thead>
 
-    </thead>
+            <tr>
+                <th>ID</th>
+                <th>Tiêu đề</th>
+                <th>Người tạo</th>
+                <th>Ưu tiên</th>
+                <th>Ngày giao</th>
+                <th>Trạng thái</th>
+                <th>Thao tác</th>
+            </tr>
 
-    <tbody>
+        </thead>
 
-        <tr>
+        <tbody>
 
-            <td>5</td>
+            {% if documents %}
 
-            <td>Công văn khẩn</td>
+                {% for doc in documents %}
 
-            <td>admin</td>
+                <tr>
 
-            <td>22/04/2026</td>
+                    <td>#{{ doc.id }}</td>
 
-            <td>
-                <span class="status status-pending">
-                    Pending
-                </span>
-            </td>
+                    <td>{{ doc.title }}</td>
 
-            <td>
+                    <td>
+                        {{ doc.creator_name or '---' }}
+                    </td>
 
-                <button class="btn btn-success">
-                    Nhận xử lý
-                </button>
+                    <td>
+                        {{ doc.priority or 'normal' }}
+                    </td>
 
-            </td>
+                    <td>
+                        {{ doc.created_at }}
+                    </td>
 
-        </tr>
+                    <td>
 
-    </tbody>
+                        <span class="
+                            status
+                            status-{{ doc.status }}
+                        ">
+                            {{ doc.status }}
+                        </span>
 
-</table>
+                    </td>
 
+                    <td class="action-buttons">
+
+                        <a href="/documents/{{ doc.id }}"
+                           class="btn btn-success btn-sm">
+                            View
+                        </a>
+
+                        <form method="POST"
+                              action="/documents/update-status/{{ doc.id }}">
+
+                            <input type="hidden"
+                                   name="status"
+                                   value="processing">
+
+                            <button class="btn btn-warning btn-sm">
+                                Nhận xử lý
+                            </button>
+
+                        </form>
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            {% else %}
+
+                <tr>
+
+                    <td colspan="7"
+                        class="text-center">
+
+                        Không có văn bản nào
+
+                    </td>
+
+                </tr>
+
+            {% endif %}
+
+        </tbody>
+
+    </table>
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/document.js') }}"></script>
 {% endblock %}

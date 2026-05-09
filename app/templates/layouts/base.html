@@ -6,15 +6,30 @@ FILE: app/templates/layouts/base.html
 <html lang="vi">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>DocSys</title>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>
+
+        {% block title %}
+        DocSys
+        {% endblock %}
+
+    </title>
 
     <!-- GLOBAL CSS -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/global.css') }}">
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/global.css') }}">
+
+    <!-- FONT AWESOME -->
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
     {% block extra_css %}{% endblock %}
+
 </head>
 
 <body>
@@ -22,4 +37,5 @@ FILE: app/templates/layouts/base.html
     {% block content %}{% endblock %}
 
 </body>
+
 </html>

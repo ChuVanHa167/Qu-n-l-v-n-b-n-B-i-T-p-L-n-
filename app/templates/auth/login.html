@@ -6,27 +6,45 @@ FILE: app/templates/auth/login.html
 
 {% block auth_content %}
 
-<h1 class="auth-title">Đăng nhập hệ thống</h1>
+<h1 class="auth-title">
+    AI Document Management
+</h1>
+
+<p style="text-align:center;margin-bottom:25px;">
+    Hệ thống quản lý văn bản nội bộ trường học
+</p>
 
 {% if error %}
+
 <div class="auth-error">
     {{ error }}
 </div>
+
 <br>
+
 {% endif %}
 
-<form method="POST" class="auth-form">
+<form
+    method="POST"
+    class="auth-form"
+>
 
-    <input type="text"
-           name="username"
-           placeholder="Nhập username">
+    <input
+        type="text"
+        name="username"
+        placeholder="Nhập username"
+        required
+    >
 
-    <input type="password"
-           name="password"
-           placeholder="Nhập password">
+    <input
+        type="password"
+        name="password"
+        placeholder="Nhập password"
+        required
+    >
 
     <button class="btn">
-        Đăng nhập
+        🔐 Đăng nhập
     </button>
 
 </form>
@@ -34,8 +52,13 @@ FILE: app/templates/auth/login.html
 <div class="auth-footer">
 
     <p>
+
         Chưa có tài khoản?
-        <a href="/register">Đăng ký</a>
+
+        <a href="/register">
+            Đăng ký
+        </a>
+
     </p>
 
 </div>

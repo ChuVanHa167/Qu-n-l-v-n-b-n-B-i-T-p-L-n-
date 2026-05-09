@@ -1,23 +1,13 @@
 # =========================================================
 # FILE: app/controllers/auth_controller.py
 # =========================================================
-# MỤC ĐÍCH:
-# - Xử lý Authentication
-# - Login
-# - Register
-# - Logout
-#
-# SOLID:
-# - Chỉ xử lý AUTH
-# - Không xử lý document
-# - Không xử lý admin dashboard
-# =========================================================
 
 from flask import Blueprint
 from flask import render_template
 from flask import request
 from flask import redirect
 from flask import session
+from flask import flash
 
 from app.models.user_model import UserModel
 from app.models.audit_log_model import AuditLogModel
@@ -53,27 +43,47 @@ def login():
 
     if request.method == 'POST':
 
-        username = request.form.get('username')
-        password = request.form.get('password')
+        username = request.form.get(
+            'username'
+        )
 
-        user = UserModel.find_by_username(username)
+        password = request.form.get(
+            'password'
+        )
+
+        user = UserModel.find_by_username(
+            username
+        )
 
         # user không tồn tại
         if not user:
+
             error = "Sai username"
+
+        # tài khoản bị khóa
+        elif user['is_active'] == 0:
+
+            error = "Tài khoản đã bị khóa"
 
         # sai password
         elif user['password'] != password:
+
             error = "Sai password"
 
         else:
 
             # lưu session
             session['user_id'] = user['id']
-            session['username'] = user['username']
-            session['role'] = user['role']
 
-            # ghi log
+            session['username'] = user[
+                'username'
+            ]
+
+            session['role'] = user[
+                'role'
+            ]
+
+            # ghi audit log
             AuditLogModel.create_log(
                 user['id'],
                 'LOGIN',
@@ -82,14 +92,19 @@ def login():
                 f"{user['username']} đăng nhập hệ thống"
             )
 
-            # redirect theo role
+            flash('Đăng nhập thành công')
+
+            # điều hướng theo role
             if user['role'] == 'admin':
+
                 return redirect('/admin')
 
             elif user['role'] == 'staff':
+
                 return redirect('/staff')
 
             else:
+
                 return redirect('/employee')
 
     return render_template(
@@ -101,18 +116,41 @@ def login():
 # =========================================================
 # REGISTER
 # =========================================================
-@auth_bp.route('/register', methods=['GET', 'POST'])
+@auth_bp.route(
+    '/register',
+    methods=['GET', 'POST']
+)
 def register():
 
     error = None
 
     if request.method == 'POST':
 
-        username = request.form.get('username')
-        password = request.form.get('password')
-        role = request.form.get('role')
+        username = request.form.get(
+            'username'
+        )
 
-        # check tồn tại
+        password = request.form.get(
+            'password'
+        )
+
+        role = request.form.get(
+            'role'
+        )
+
+        full_name = request.form.get(
+            'full_name'
+        )
+
+        email = request.form.get(
+            'email'
+        )
+
+        phone = request.form.get(
+            'phone'
+        )
+
+        # check user tồn tại
         if UserModel.user_exists(username):
 
             error = "Username đã tồn tại"
@@ -122,8 +160,13 @@ def register():
             UserModel.create_user(
                 username,
                 password,
-                role
+                role,
+                full_name,
+                email,
+                phone
             )
+
+            flash('Đăng ký thành công')
 
             return redirect('/')
 
@@ -139,6 +182,19 @@ def register():
 @auth_bp.route('/logout')
 def logout():
 
+    # ghi log trước khi clear session
+    if 'user_id' in session:
+
+        AuditLogModel.create_log(
+            session['user_id'],
+            'LOGOUT',
+            'USER',
+            session['user_id'],
+            'Đăng xuất hệ thống'
+        )
+
     session.clear()
+
+    flash('Đã đăng xuất')
 
     return redirect('/')
