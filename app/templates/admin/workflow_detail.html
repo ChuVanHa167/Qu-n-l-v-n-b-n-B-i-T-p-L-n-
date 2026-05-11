@@ -1,0 +1,226 @@
+{% extends "layouts/dashboard_layout.html" %}
+
+{% block page_title %}
+Chi tiết văn bản
+{% endblock %}
+
+{% block dashboard_content %}
+
+<div class="card">
+
+    <h2>
+        📄 {{ document.title }}
+    </h2>
+
+    <br>
+
+    <p>
+        {{ document.content }}
+    </p>
+
+    <br>
+
+    <p>
+        <strong>Loại:</strong>
+        {{ document.document_type }}
+    </p>
+
+    <p>
+        <strong>Trạng thái:</strong>
+        {{ document.status }}
+    </p>
+
+    <p>
+        <strong>Độ ưu tiên:</strong>
+        {{ document.priority }}
+    </p>
+
+</div>
+
+<br>
+
+<!-- ================================= -->
+<!-- ASSIGN -->
+<!-- ================================= -->
+<div class="card">
+
+    <h3>
+        👤 Phân công xử lý
+    </h3>
+
+    <br>
+
+    <form
+        method="POST"
+        action="/documents/assign/{{ document.id }}"
+    >
+
+        <select name="assigned_to">
+
+            {% for user in users %}
+
+            {% if user.role == 'staff' %}
+
+            <option value="{{ user.id }}">
+
+                {{ user.username }}
+
+            </option>
+
+            {% endif %}
+
+            {% endfor %}
+
+        </select>
+
+        <button class="btn">
+            Phân công
+        </button>
+
+    </form>
+
+</div>
+
+<br>
+
+<!-- ================================= -->
+<!-- APPROVE / REJECT -->
+<!-- ================================= -->
+<div class="card">
+
+    <h3>
+        ⚙️ Xử lý văn bản
+    </h3>
+
+    <br>
+
+    <a
+        href="/documents/approve/{{ document.id }}"
+        class="btn btn-success"
+    >
+        ✅ Duyệt
+    </a>
+
+    <br><br>
+
+    <form
+        method="POST"
+        action="/documents/reject/{{ document.id }}"
+    >
+
+        <textarea
+            name="reason"
+            rows="4"
+            placeholder="Lý do từ chối"
+        ></textarea>
+
+        <br><br>
+
+        <button class="btn btn-danger">
+            ❌ Từ chối
+        </button>
+
+    </form>
+
+</div>
+
+<br>
+
+<!-- ================================= -->
+<!-- COMMENTS -->
+<!-- ================================= -->
+<div class="card">
+
+    <h3>
+        💬 Bình luận
+    </h3>
+
+    <br>
+
+    <form
+        method="POST"
+        action="/documents/comment/{{ document.id }}"
+    >
+
+        <textarea
+            name="comment"
+            rows="4"
+            placeholder="Nhập bình luận"
+        ></textarea>
+
+        <br><br>
+
+        <button class="btn">
+            Gửi bình luận
+        </button>
+
+    </form>
+
+    <br>
+
+    {% for comment in comments %}
+
+    <div class="audit-item">
+
+        <strong>
+            {{ comment.username }}
+        </strong>
+
+        <br><br>
+
+        {{ comment.comment }}
+
+        <br><br>
+
+        🕒 {{ comment.created_at }}
+
+    </div>
+
+    <br>
+
+    {% endfor %}
+
+</div>
+
+<br>
+
+<!-- ================================= -->
+<!-- TIMELINE -->
+<!-- ================================= -->
+<div class="card">
+
+    <h3>
+        📜 Timeline xử lý
+    </h3>
+
+    <br>
+
+    {% for history in histories %}
+
+    <div class="audit-item">
+
+        <strong>
+            {{ history.action }}
+        </strong>
+
+        <br><br>
+
+        👤 {{ history.username }}
+
+        <br><br>
+
+        📝 {{ history.note }}
+
+        <br><br>
+
+        🕒 {{ history.created_at }}
+
+    </div>
+
+    <br>
+
+    {% endfor %}
+
+</div>
+
+{% endblock %}

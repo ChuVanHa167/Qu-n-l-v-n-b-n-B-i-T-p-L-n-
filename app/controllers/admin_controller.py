@@ -525,3 +525,156 @@ def update_user(user_id):
     flash('Cập nhật user thành công')
 
     return redirect('/admin/users')
+
+# =========================================================
+# WORKFLOW DETAIL
+# =========================================================
+@admin_bp.route(
+    '/admin/documents/workflow/<int:document_id>'
+)
+def workflow_detail(document_id):
+
+    if not check_admin():
+        return redirect('/')
+
+    document = DocumentModel.get_document_by_id(
+        document_id
+    )
+
+    comments = DocumentModel.get_document_comments(
+        document_id
+    )
+
+    histories = DocumentModel.get_approval_history(
+        document_id
+    )
+
+    users = UserModel.get_all_users()
+
+    return render_template(
+        'admin/workflow_detail.html',
+
+        document=document,
+        comments=comments,
+        histories=histories,
+        users=users
+    )
+
+# =========================================================
+# FILTER DOCUMENTS
+# =========================================================
+@admin_bp.route('/admin/documents/filter')
+def filter_documents():
+
+    if not check_admin():
+        return redirect('/')
+
+    keyword = request.args.get(
+        'keyword',
+        ''
+    )
+
+    status = request.args.get(
+        'status',
+        ''
+    )
+
+    document_type = request.args.get(
+        'document_type',
+        ''
+    )
+
+    documents = DocumentModel.filter_documents(
+        keyword,
+        status,
+        document_type
+    )
+
+    users = UserModel.get_all_users()
+
+    return render_template(
+        'admin/documents.html',
+
+        documents=documents,
+        users=users
+    )
+
+# =========================================================
+# LOAD EDIT DOCUMENT
+# =========================================================
+@admin_bp.route(
+    '/admin/documents/edit/<int:document_id>'
+)
+def load_edit_document(document_id):
+
+    if not check_admin():
+        return redirect('/')
+
+    documents = DocumentModel.get_all_documents()
+
+    users = UserModel.get_all_users()
+
+    edit_document = DocumentModel.get_document_by_id(
+        document_id
+    )
+
+    return render_template(
+        'admin/documents.html',
+
+        documents=documents,
+        users=users,
+
+        # truyền document edit xuống view
+        edit_document=edit_document
+    )
+
+
+# =========================================================
+# UPDATE DOCUMENT
+# =========================================================
+@admin_bp.route(
+    '/admin/documents/update/<int:document_id>',
+    methods=['POST']
+)
+def update_document(document_id):
+
+    if not check_admin():
+        return redirect('/')
+
+    title = request.form.get('title')
+
+    content = request.form.get('content')
+
+    document_type = request.form.get(
+        'document_type'
+    )
+
+    category = request.form.get(
+        'category'
+    )
+
+    priority = request.form.get(
+        'priority'
+    )
+
+    DocumentModel.update_document(
+        document_id,
+        title,
+        content,
+        document_type,
+        category,
+        priority
+    )
+
+    # log audit
+    AuditLogModel.create_log(
+        session['user_id'],
+        'UPDATE_DOCUMENT',
+        'DOCUMENT',
+        document_id,
+        f'Cập nhật văn bản {title}'
+    )
+
+    flash('Cập nhật văn bản thành công')
+
+    return redirect('/admin/documents')

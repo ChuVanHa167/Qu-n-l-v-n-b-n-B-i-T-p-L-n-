@@ -234,3 +234,46 @@ def add_comment(document_id):
     return redirect(
         f'/documents/{document_id}'
     )
+
+# =========================================================
+# DOCUMENT WORKFLOW DETAIL
+# =========================================================
+@document_bp.route(
+    '/documents/workflow/<int:document_id>'
+)
+def workflow_detail(document_id):
+
+    if not check_login():
+        return redirect('/')
+
+    document = (
+        DocumentModel.get_document_full_detail(
+            document_id
+        )
+    )
+
+    comments = (
+        DocumentModel.get_document_comments(
+            document_id
+        )
+    )
+
+    histories = (
+        DocumentModel.get_approval_history(
+            document_id
+        )
+    )
+
+    users = UserModel.get_all_users()
+
+    return render_template(
+        'documents/workflow_detail.html',
+
+        document=document,
+
+        comments=comments,
+
+        histories=histories,
+
+        users=users
+    )

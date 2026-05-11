@@ -52,11 +52,28 @@ Quản lý văn bản
 </div>
 
 <!-- ===================================== -->
-<!-- CREATE DOCUMENT -->
+<!-- CREATE / UPDATE DOCUMENT -->
 <!-- ===================================== -->
 <div class="card">
 
-    <h3>➕ Tạo văn bản mới</h3>
+    {% if edit_document %}
+
+    <h3>
+        ✏️ Cập nhật văn bản
+    </h3>
+
+    <br>
+
+    <form
+        method="POST"
+        action="/admin/documents/update/{{ edit_document.id }}"
+    >
+
+    {% else %}
+
+    <h3>
+        ➕ Tạo văn bản mới
+    </h3>
 
     <br>
 
@@ -65,10 +82,13 @@ Quản lý văn bản
         action="/admin/documents/create"
     >
 
+    {% endif %}
+
         <input
             type="text"
             name="title"
             placeholder="Tiêu đề văn bản"
+            value="{{ edit_document.title if edit_document else '' }}"
             required
         >
 
@@ -78,7 +98,7 @@ Quản lý văn bản
             name="content"
             rows="6"
             placeholder="Nội dung văn bản"
-        ></textarea>
+        >{{ edit_document.content if edit_document else '' }}</textarea>
 
         <br><br>
 
@@ -86,27 +106,102 @@ Quản lý văn bản
 
             <select name="document_type">
 
-                <option value="incoming">
+                <option value="incoming"
+                    {% if edit_document and edit_document.document_type == 'incoming' %}
+                        selected
+                    {% endif %}
+                >
                     Công văn đến
                 </option>
 
-                <option value="outgoing">
+                <option value="outgoing"
+                    {% if edit_document and edit_document.document_type == 'outgoing' %}
+                        selected
+                    {% endif %}
+                >
                     Công văn đi
                 </option>
 
-                <option value="decision">
+                <option value="decision"
+                    {% if edit_document and edit_document.document_type == 'decision' %}
+                        selected
+                    {% endif %}
+                >
                     Quyết định
                 </option>
 
-                <option value="plan">
+                <option value="plan"
+                    {% if edit_document and edit_document.document_type == 'plan' %}
+                        selected
+                    {% endif %}
+                >
                     Kế hoạch
                 </option>
 
             </select>
 
+            <!-- category -->
+            <select name="category">
+
+                <option value="Nhân sự">
+                    Nhân sự
+                </option>
+
+                <option value="Tài chính">
+                    Tài chính
+                </option>
+
+                <option value="Hành chính">
+                    Hành chính
+                </option>
+
+                <option value="Nội bộ">
+                    Nội bộ
+                </option>
+
+            </select>
+
+            <!-- priority -->
+            <select name="priority">
+
+                <option value="low">
+                    Low
+                </option>
+
+                <option value="normal" selected>
+                    Normal
+                </option>
+
+                <option value="high">
+                    High
+                </option>
+
+                <option value="urgent">
+                    Urgent
+                </option>
+
+            </select>
+
+            {% if edit_document %}
+
+            <button class="btn btn-success">
+                Update
+            </button>
+
+            <a
+                href="/admin/documents"
+                class="btn btn-danger"
+            >
+                Cancel
+            </a>
+
+            {% else %}
+
             <button class="btn">
                 Tạo văn bản
             </button>
+
+            {% endif %}
 
         </div>
 
@@ -119,15 +214,74 @@ Quản lý văn bản
 <!-- ===================================== -->
 <!-- FILTER -->
 <!-- ===================================== -->
-<div class="filter-bar">
+<form
+    method="GET"
+    action="/admin/documents/filter"
+>
 
-    <input
-        type="text"
-        id="documentSearch"
-        placeholder="🔍 Tìm kiếm văn bản"
-    >
+    <div class="filter-bar">
 
-</div>
+        <input
+            type="text"
+            name="keyword"
+            placeholder="🔍 Tìm kiếm văn bản"
+        >
+
+        <select name="status">
+
+            <option value="">
+                All Status
+            </option>
+
+            <option value="pending">
+                Pending
+            </option>
+
+            <option value="processing">
+                Processing
+            </option>
+
+            <option value="approved">
+                Approved
+            </option>
+
+            <option value="rejected">
+                Rejected
+            </option>
+
+        </select>
+
+        <select name="document_type">
+
+            <option value="">
+                All Type
+            </option>
+
+            <option value="incoming">
+                Incoming
+            </option>
+
+            <option value="outgoing">
+                Outgoing
+            </option>
+
+            <option value="decision">
+                Decision
+            </option>
+
+            <option value="plan">
+                Plan
+            </option>
+
+        </select>
+
+        <button class="btn">
+            Filter
+        </button>
+
+    </div>
+
+</form>
 
 <!-- ===================================== -->
 <!-- TABLE -->
@@ -195,10 +349,17 @@ Quản lý văn bản
             <td>
 
                 <a
-                    href="/documents/{{ document.id }}"
+                    href="/admin/documents/workflow/{{ document.id }}"
                     class="btn btn-success"
                 >
                     View
+                </a>
+
+                <a
+                    href="/admin/documents/edit/{{ document.id }}"
+                    class="btn"
+                >
+                    Edit
                 </a>
 
                 <a

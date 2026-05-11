@@ -120,6 +120,8 @@ def init_database(app):
             ai_category TEXT,
 
             priority TEXT DEFAULT 'normal',
+                   
+            category TEXT,
 
             status TEXT DEFAULT 'pending',
 

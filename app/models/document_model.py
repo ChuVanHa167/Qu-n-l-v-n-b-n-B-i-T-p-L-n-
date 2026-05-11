@@ -8,19 +8,141 @@ from app.models.database import get_db
 class DocumentModel:
 
     # =====================================================
-    # GET DOCUMENTS BY STATUS
+    # GET DOCUMENT FULL DETAIL
     # =====================================================
     @staticmethod
-    def get_documents_by_status(status):
+    def get_document_full_detail(document_id):
 
         db = get_db()
 
         return db.execute("""
-            SELECT *
+            SELECT
+                documents.*,
+
+                creator.username
+                as creator_name,
+
+                assignee.username
+                as assignee_name
+
             FROM documents
-            WHERE status = ?
+
+            LEFT JOIN users creator
+            ON documents.created_by = creator.id
+
+            LEFT JOIN users assignee
+            ON documents.assigned_to = assignee.id
+
+            WHERE documents.id = ?
+        """, (document_id,)).fetchone()
+
+    @staticmethod
+    def get_document_comments(document_id):
+
+        db = get_db()
+
+        return db.execute("""
+            SELECT
+                document_comments.*,
+                users.username
+            FROM document_comments
+
+            LEFT JOIN users
+            ON document_comments.user_id = users.id
+
+            WHERE document_id = ?
+
             ORDER BY created_at DESC
-        """, (status,)).fetchall()
+        """, (document_id,)).fetchall()
+
+    @staticmethod
+    def add_comment(
+        document_id,
+        user_id,
+        comment
+    ):
+
+        db = get_db()
+
+        db.execute("""
+            INSERT INTO document_comments(
+                document_id,
+                user_id,
+                comment
+            )
+            VALUES (?, ?, ?)
+        """, (
+            document_id,
+            user_id,
+            comment
+        ))
+
+        db.commit()
+
+    @staticmethod
+    def reject_document(document_id, reason):
+
+        db = get_db()
+
+        db.execute("""
+            UPDATE documents
+            SET
+                status = 'rejected',
+                reject_reason = ?,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = ?
+        """, (
+            reason,
+            document_id
+        ))
+
+        db.commit()
+
+    @staticmethod
+    def get_approval_history(document_id):
+
+        db = get_db()
+
+        return db.execute("""
+            SELECT
+                approval_history.*,
+                users.username
+            FROM approval_history
+
+            LEFT JOIN users
+            ON approval_history.processed_by = users.id
+
+            WHERE document_id = ?
+
+            ORDER BY created_at DESC
+        """, (document_id,)).fetchall()
+
+    @staticmethod
+    def create_approval_history(
+        document_id,
+        action,
+        note,
+        processed_by
+    ):
+
+        db = get_db()
+
+        db.execute("""
+            INSERT INTO approval_history(
+                document_id,
+                action,
+                note,
+                processed_by
+            )
+            VALUES (?, ?, ?, ?)
+        """, (
+            document_id,
+            action,
+            note,
+            processed_by
+        ))
+
+        db.commit()
 
     # =====================================================
     # GET DOCUMENTS BY STATUS
@@ -77,6 +199,7 @@ class DocumentModel:
         content,
         document_type,
         created_by,
+        category='',
         file_path='',
         priority='normal'
     ):
@@ -89,15 +212,17 @@ class DocumentModel:
                 content,
                 document_type,
                 created_by,
+                category,
                 file_path,
                 priority
             )
-            VALUES (?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
         """, (
             title,
             content,
             document_type,
             created_by,
+            category,
             file_path,
             priority
         ))
@@ -308,3 +433,95 @@ class DocumentModel:
 
         return result['total']
     
+    # =====================================================
+    # FILTER DOCUMENTS
+    # =====================================================
+    @staticmethod
+    def filter_documents(
+        keyword='',
+        status='',
+        document_type=''
+    ):
+
+        db = get_db()
+
+        query = """
+            SELECT *
+            FROM documents
+            WHERE 1=1
+        """
+
+        params = []
+
+        if keyword:
+
+            query += """
+                AND (
+                    title LIKE ?
+                    OR content LIKE ?
+                )
+            """
+
+            params.append(f'%{keyword}%')
+            params.append(f'%{keyword}%')
+
+        if status:
+
+            query += """
+                AND status = ?
+            """
+
+            params.append(status)
+
+        if document_type:
+
+            query += """
+                AND document_type = ?
+            """
+
+            params.append(document_type)
+
+        query += """
+            ORDER BY created_at DESC
+        """
+
+        return db.execute(
+            query,
+            tuple(params)
+        ).fetchall()
+    
+    # =====================================================
+    # UPDATE DOCUMENT
+    # =====================================================
+    @staticmethod
+    def update_document(
+        document_id,
+        title,
+        content,
+        document_type,
+        category,
+        priority
+    ):
+
+        db = get_db()
+
+        db.execute("""
+            UPDATE documents
+            SET
+                title = ?,
+                content = ?,
+                document_type = ?,
+                category = ?,
+                priority = ?,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = ?
+        """, (
+            title,
+            content,
+            document_type,
+            category,
+            priority,
+            document_id
+        ))
+
+        db.commit()
