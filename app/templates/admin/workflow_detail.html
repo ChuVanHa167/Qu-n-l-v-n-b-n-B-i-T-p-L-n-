@@ -40,6 +40,62 @@ Chi tiết văn bản
 <br>
 
 <!-- ================================= -->
+<!-- AI RESULT -->
+<!-- ================================= -->
+<div class="card">
+
+    <h3>
+        🤖 AI Analysis
+    </h3>
+
+    <br>
+
+    <p>
+        <strong>AI Status:</strong>
+
+        {% if document.ai_processed == 1 %}
+
+            ✅ Processed
+
+        {% else %}
+
+            ❌ Not Processed
+
+        {% endif %}
+    </p>
+
+    <br>
+
+    <p>
+        <strong>AI Category:</strong>
+        {{ document.ai_category or 'N/A' }}
+    </p>
+
+    <br>
+
+    <p>
+        <strong>AI Summary:</strong>
+    </p>
+
+    <div class="audit-item">
+        {{ document.ai_summary or 'Chưa có dữ liệu AI' }}
+    </div>
+
+    <br>
+
+    <p>
+        <strong>OCR Text:</strong>
+    </p>
+
+    <textarea rows="10">
+{{ document.ocr_text or '' }}
+    </textarea>
+
+</div>
+
+<br>
+
+<!-- ================================= -->
 <!-- ASSIGN -->
 <!-- ================================= -->
 <div class="card">
@@ -52,7 +108,7 @@ Chi tiết văn bản
 
     <form
         method="POST"
-        action="/documents/assign/{{ document.id }}"
+        action="/admin/documents/assign/{{ document.id }}"
     >
 
         <select name="assigned_to">
@@ -95,7 +151,7 @@ Chi tiết văn bản
     <br>
 
     <a
-        href="/documents/approve/{{ document.id }}"
+        href="/admin/documents/approve/{{ document.id }}"
         class="btn btn-success"
     >
         ✅ Duyệt
@@ -105,7 +161,7 @@ Chi tiết văn bản
 
     <form
         method="POST"
-        action="/documents/reject/{{ document.id }}"
+        action="/admin/documents/reject/{{ document.id }}"
     >
 
         <textarea
@@ -139,7 +195,7 @@ Chi tiết văn bản
 
     <form
         method="POST"
-        action="/documents/comment/{{ document.id }}"
+        action="/admin/documents/comment/{{ document.id }}"
     >
 
         <textarea

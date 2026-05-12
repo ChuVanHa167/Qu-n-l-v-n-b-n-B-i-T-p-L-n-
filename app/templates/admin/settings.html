@@ -46,11 +46,46 @@ Settings
 
 <br>
 
-<div class="settings-grid">
+<!-- TOP STATS -->
+<div class="admin-grid">
+
+    <form
+        action="/admin/settings/update"
+        method="POST"
+        class="card"
+    >
+        <h3>🖥️ Server</h3>
+        <p>Local Development</p>
+    </form>
 
     <div class="card">
+        <h3>🤖 OCR Engine</h3>
+        <p>PyTesseract AI</p>
+    </div>
 
-        <h3>Thông tin hệ thống</h3>
+    <div class="card">
+        <h3>📦 Database</h3>
+        <p>SQLite3</p>
+    </div>
+
+    <div class="card">
+        <h3>🔐 Security</h3>
+        <p>Admin Protected</p>
+    </div>
+
+</div>
+
+<br>
+
+<div class="settings-grid">
+
+    <form
+        action="/admin/settings/update"
+        method="POST"
+        class="card"
+    >
+
+        <h3>🛠️ Thông tin hệ thống</h3>
 
         <br>
 
@@ -58,7 +93,9 @@ Settings
 
         <input
             type="text"
-            value="AI Document Management System"
+            name="system_name"
+            value="{{ system_name }}"
+            required
         >
 
         <br><br>
@@ -67,7 +104,9 @@ Settings
 
         <input
             type="email"
-            value="admin@school.edu.vn"
+            name="admin_email"
+            value="{{ admin_email }}"
+            required
         >
 
         <br><br>
@@ -76,20 +115,35 @@ Settings
 
         <input
             type="text"
-            value="PyTesseract OCR"
+            name="ocr_engine"
+            value="{{ ocr_engine }}"
         >
 
         <br><br>
 
-        <button class="btn">
-            Lưu thay đổi
+        <label>Phiên bản hệ thống</label>
+
+        <input
+            type="text"
+            value="Version 2.0"
+            disabled
+        >
+
+        <br><br>
+
+        <button
+            type="submit"
+            class="btn"
+        >
+            💾 Lưu thay đổi
         </button>
 
-    </div>
+    </form>
 
+    <!-- SECURITY -->
     <div class="card">
 
-        <h3>Bảo mật hệ thống</h3>
+        <h3>🔐 Bảo mật hệ thống</h3>
 
         <br>
 
@@ -105,11 +159,121 @@ Settings
 
         <br><br>
 
+        <label>Xác thực đăng nhập</label>
+
+        <select>
+
+            <option>
+                Bật xác thực cơ bản
+            </option>
+
+            <option>
+                Xác thực 2 lớp
+            </option>
+
+        </select>
+
+        <br><br>
+
         <button class="btn btn-danger">
-            Cập nhật bảo mật
+            🔒 Cập nhật bảo mật
         </button>
 
     </div>
+
+</div>
+
+<br>
+
+<!-- SYSTEM OPTIONS -->
+<div class="card">
+
+    <h3>⚡ Tùy chọn hệ thống</h3>
+
+    <br>
+
+    <div class="filter-bar">
+
+        <div>
+
+            <label>Tự động AI OCR</label>
+
+            <select>
+                <option>Bật</option>
+                <option>Tắt</option>
+            </select>
+
+        </div>
+
+        <div>
+
+            <label>Tự động phân loại văn bản</label>
+
+            <select>
+                <option>Bật</option>
+                <option>Tắt</option>
+            </select>
+
+        </div>
+
+        <div>
+
+            <label>Cho phép upload PDF</label>
+
+            <select>
+                <option>Có</option>
+                <option>Không</option>
+            </select>
+
+        </div>
+
+    </div>
+
+    <br>
+
+    <button class="btn">
+        ⚙️ Cập nhật tùy chọn
+    </button>
+
+</div>
+
+<br>
+
+<!-- SYSTEM INFO -->
+<div class="card">
+
+    <h3>📊 Thông tin hệ thống</h3>
+
+    <br>
+
+    <table class="table">
+
+        <tr>
+            <td>Framework</td>
+            <td>Flask Python</td>
+        </tr>
+
+        <tr>
+            <td>Database</td>
+            <td>SQLite3</td>
+        </tr>
+
+        <tr>
+            <td>AI Engine</td>
+            <td>PyTesseract + NLP</td>
+        </tr>
+
+        <tr>
+            <td>Upload Limit</td>
+            <td>16MB</td>
+        </tr>
+
+        <tr>
+            <td>Environment</td>
+            <td>Development</td>
+        </tr>
+
+    </table>
 
 </div>
 

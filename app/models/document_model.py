@@ -195,36 +195,118 @@ class DocumentModel:
     # =====================================================
     @staticmethod
     def create_document(
+
         title,
         content,
         document_type,
         created_by,
+
         category='',
+
         file_path='',
-        priority='normal'
+
+        original_filename='',
+
+        file_extension='',
+
+        file_size=0,
+
+        priority='normal',
+
+        document_number='',
+
+        issuer='',
+
+        signer='',
+
+        issue_date='',
+
+        keywords='',
+
+        tags='',
+
+        ai_summary='',
+
+        ocr_text='',
+
+        ai_category='',
+
+        ai_confidence=0
     ):
 
         db = get_db()
 
         db.execute("""
             INSERT INTO documents (
+
                 title,
                 content,
                 document_type,
                 created_by,
+
                 category,
+
                 file_path,
-                priority
+                original_filename,
+                file_extension,
+                file_size,
+
+                priority,
+
+                document_number,
+                issuer,
+                signer,
+                issue_date,
+
+                keywords,
+                tags,
+
+                ai_summary,
+                ocr_text,
+                ai_category,
+
+                ai_confidence,
+
+                ai_processed
+
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+            VALUES (
+
+                ?, ?, ?, ?,
+                ?, ?, ?, ?, ?,
+                ?, ?, ?, ?, ?,
+                ?, ?, ?, ?, ?,
+                ?, 1
+            )
         """, (
+
             title,
             content,
             document_type,
             created_by,
+
             category,
+
             file_path,
-            priority
+            original_filename,
+            file_extension,
+            file_size,
+
+            priority,
+
+            document_number,
+            issuer,
+            signer,
+            issue_date,
+
+            keywords,
+            tags,
+
+            ai_summary,
+            ocr_text,
+            ai_category,
+
+            ai_confidence
         ))
 
         db.commit()
@@ -521,6 +603,38 @@ class DocumentModel:
             document_type,
             category,
             priority,
+            document_id
+        ))
+
+        db.commit()
+
+    # =====================================================
+    # SAVE AI PROCESSING RESULT
+    # =====================================================
+    @staticmethod
+    def save_ai_processing_result(
+        document_id,
+        ocr_text,
+        ai_summary,
+        ai_category
+    ):
+
+        db = get_db()
+
+        db.execute("""
+            UPDATE documents
+            SET
+                ocr_text = ?,
+                ai_summary = ?,
+                ai_category = ?,
+                ai_processed = 1,
+                ai_processing_status = 'completed',
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = ?
+        """, (
+            ocr_text,
+            ai_summary,
+            ai_category,
             document_id
         ))
 

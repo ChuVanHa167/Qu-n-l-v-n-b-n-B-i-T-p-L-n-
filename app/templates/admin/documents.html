@@ -80,9 +80,77 @@ Quản lý văn bản
     <form
         method="POST"
         action="/admin/documents/create"
+        enctype="multipart/form-data"
     >
 
     {% endif %}
+
+        <input
+            type="file"
+            name="document_file"
+            id="document_file"
+            accept=".pdf,.docx,.png,.jpg,.jpeg"
+            required
+        >
+
+        <div id="uploaded_file_preview"></div>
+
+        <!-- ===================================== -->
+        <!-- AI OCR VIEWER -->
+        <!-- ===================================== -->
+        <div
+            id="ai_processing_box"
+            style="
+                display:none;
+                margin-top:20px;
+                background:white;
+                border-radius:12px;
+                padding:20px;
+                border:1px solid #ddd;
+            "
+        >
+
+            <h3>
+                🤖 AI OCR Processing
+            </h3>
+
+            <br>
+
+            <div class="ocr-progress-wrapper">
+
+                <div
+                    id="ocr_progress_bar"
+                    class="ocr-progress-bar"
+                ></div>
+
+            </div>
+
+            <br>
+
+            <div id="ocr_status_text">
+
+                Đang khởi tạo AI...
+
+            </div>
+
+            <br>
+
+            <div
+                id="ocr_live_text"
+                style="
+                    background:#111827;
+                    color:#22c55e;
+                    padding:15px;
+                    border-radius:10px;
+                    min-height:120px;
+                    max-height:250px;
+                    overflow:auto;
+                    font-family:monospace;
+                    white-space:pre-wrap;
+                "
+            ></div>
+
+        </div>
 
         <input
             type="text"
@@ -91,6 +159,18 @@ Quản lý văn bản
             value="{{ edit_document.title if edit_document else '' }}"
             required
         >
+
+        <br><br>
+
+        <button
+            type="button"
+            class="btn btn-success"
+            onclick="processAI()"
+        >
+            🤖 AI Auto Fill
+        </button>
+
+        <br><br>
 
         <br><br>
 
@@ -200,7 +280,7 @@ Quản lý văn bản
             <button class="btn">
                 Tạo văn bản
             </button>
-
+            
             {% endif %}
 
         </div>
@@ -360,6 +440,13 @@ Quản lý văn bản
                     class="btn"
                 >
                     Edit
+                </a>
+
+                <a
+                    href="/admin/documents/process-ai/{{ document.id }}"
+                    class="btn btn-success"
+                >
+                    AI Process
                 </a>
 
                 <a

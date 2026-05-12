@@ -107,36 +107,66 @@ def init_database(app):
 
             id INTEGER PRIMARY KEY AUTOINCREMENT,
 
-            title TEXT NOT NULL,
-
-            content TEXT,
-
+            -- =========================================
+            -- FILE
+            -- =========================================
             file_path TEXT,
 
             original_filename TEXT,
 
+            file_extension TEXT,
+
+            file_size INTEGER DEFAULT 0,
+
+            -- =========================================
+            -- DOCUMENT INFO
+            -- =========================================
+            title TEXT,
+
+            document_number TEXT,
+
             document_type TEXT,
 
-            ai_category TEXT,
-
-            priority TEXT DEFAULT 'normal',
-                   
             category TEXT,
 
-            status TEXT DEFAULT 'pending',
+            issuer TEXT,
+
+            signer TEXT,
+
+            issue_date TEXT,
+
+            keywords TEXT,
+
+            tags TEXT,
+
+            priority TEXT DEFAULT 'normal',
+
+            -- =========================================
+            -- AI DATA
+            -- =========================================
+            content TEXT,
+
+            ocr_text TEXT,
 
             ai_summary TEXT,
 
-            ocr_text TEXT,
+            ai_category TEXT,
 
             extracted_data TEXT,
 
             ai_suggestion TEXT,
 
+            ai_confidence REAL DEFAULT 0,
+
             ai_processed INTEGER DEFAULT 0,
 
             ai_processing_status TEXT
                 DEFAULT 'pending',
+
+            -- =========================================
+            -- WORKFLOW
+            -- =========================================
+            status TEXT DEFAULT 'pending',
 
             reject_reason TEXT,
 
@@ -148,6 +178,9 @@ def init_database(app):
 
             approved_at TIMESTAMP,
 
+            -- =========================================
+            -- TIME
+            -- =========================================
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -162,7 +195,6 @@ def init_database(app):
                 REFERENCES users(id)
         )
         """)
-
         # =================================================
         # APPROVAL HISTORY
         # =================================================
@@ -287,6 +319,20 @@ def init_database(app):
 
             FOREIGN KEY(user_id)
                 REFERENCES users(id)
+        )
+        """)
+
+        # =================================================
+        # SETTINGS
+        # =================================================
+        db.execute("""
+        CREATE TABLE IF NOT EXISTS settings (
+
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+            setting_key TEXT UNIQUE,
+
+            setting_value TEXT
         )
         """)
 

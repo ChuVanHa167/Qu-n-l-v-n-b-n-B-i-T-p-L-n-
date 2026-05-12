@@ -1,3 +1,4 @@
+```html
 <!-- =========================================
 FILE: app/templates/admin/audit_logs.html
 ========================================= -->
@@ -7,8 +8,8 @@ FILE: app/templates/admin/audit_logs.html
 {% block page_title %}
 Audit Logs
 {% endblock %}
-
 {% block sidebar %}
+
 <li>
     <a href="/admin">
         📊 Dashboard
@@ -38,6 +39,7 @@ Audit Logs
         ⚙️ Settings
     </a>
 </li>
+
 {% endblock %}
 
 {% block dashboard_content %}
@@ -46,26 +48,170 @@ Audit Logs
 
 <br>
 
-{% for log in logs %}
+<!-- SEARCH -->
+<form
+    action="/admin/audit/search"
+    method="GET"
+    class="search-box"
+>
 
-<div class="audit-item">
+    <input
+        type="text"
+        name="keyword"
+        placeholder="Tìm kiếm log..."
+    >
 
-    <strong>{{ log.action }}</strong>
+    <button type="submit">
+        Tìm kiếm
+    </button>
 
-    <br><br>
+</form>
 
-    {{ log.description }}
+<br>
 
-    <br><br>
+<!-- FILTER -->
+<form
+    action="/admin/audit/filter"
+    method="GET"
+>
 
-    👤 User ID: {{ log.user_id }}
+    <select name="action">
 
-    <br>
+        <option value="">
+            -- Tất cả action --
+        </option>
 
-    🕒 {{ log.created_at }}
+        <option value="CREATE_USER">
+            CREATE_USER
+        </option>
 
-</div>
+        <option value="UPDATE_USER">
+            UPDATE_USER
+        </option>
 
-{% endfor %}
+        <option value="DELETE_USER">
+            DELETE_USER
+        </option>
+
+        <option value="CREATE_DOCUMENT">
+            CREATE_DOCUMENT
+        </option>
+
+        <option value="UPDATE_DOCUMENT">
+            UPDATE_DOCUMENT
+        </option>
+
+        <option value="DELETE_DOCUMENT">
+            DELETE_DOCUMENT
+        </option>
+
+        <option value="PROCESS_AI_DOCUMENT">
+            PROCESS_AI_DOCUMENT
+        </option>
+
+    </select>
+
+    <button type="submit">
+        Lọc
+    </button>
+
+</form>
+
+<br>
+
+<table class="table">
+
+    <thead>
+
+        <tr>
+
+            <th>ID</th>
+
+            <th>Action</th>
+
+            <th>User</th>
+
+            <th>Description</th>
+
+            <th>IP</th>
+
+            <th>Time</th>
+
+        </tr>
+
+    </thead>
+
+    <tbody>
+
+        {% for log in logs %}
+
+        <tr>
+
+            <td>
+                #{{ log.id }}
+            </td>
+
+            <td>
+
+                {% if log.action == 'DELETE_DOCUMENT' %}
+
+                    <span class="badge badge-danger">
+                        DELETE
+                    </span>
+
+                {% elif log.action == 'CREATE_DOCUMENT' %}
+
+                    <span class="badge badge-success">
+                        CREATE
+                    </span>
+
+                {% elif log.action == 'UPDATE_DOCUMENT' %}
+
+                    <span class="badge badge-warning">
+                        UPDATE
+                    </span>
+
+                {% else %}
+
+                    <span class="badge">
+                        {{ log.action }}
+                    </span>
+
+                {% endif %}
+
+            </td>
+
+            <td>
+
+                {{ log.username }}
+
+            </td>
+
+            <td>
+
+                {{ log.description }}
+
+            </td>
+
+            <td>
+
+                {{ log.ip_address }}
+
+            </td>
+
+            <td>
+
+                {{ log.created_at }}
+
+            </td>
+
+        </tr>
+
+        {% endfor %}
+
+    </tbody>
+
+</table>
 
 {% endblock %}
+```

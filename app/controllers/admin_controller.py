@@ -8,16 +8,51 @@ from flask import request
 from flask import redirect
 from flask import session
 from flask import flash
-
+from app.models.notification_model import (
+    NotificationModel
+)
+from app.models.settings_model import SettingsModel
+from app.models.audit_log_model import AuditLogModel
 from app.models.user_model import UserModel
 from app.models.document_model import DocumentModel
-from app.models.audit_log_model import AuditLogModel
+from app.services.audit_service import AuditService
+from app.services.ai.document_ai_service import (
+    DocumentAIService
+)
+import app.services.notification_service as ns
+import uuid
+import os
 
+from werkzeug.utils import secure_filename
+
+from flask import current_app
+from flask import jsonify
 
 admin_bp = Blueprint(
     'admin',
     __name__
 )
+
+# =========================================================
+# ALLOWED FILE EXTENSIONS
+# =========================================================
+ALLOWED_EXTENSIONS = {
+    'pdf',
+    'docx',
+    'png',
+    'jpg',
+    'jpeg'
+}
+
+
+def allowed_file(filename):
+
+    return (
+        '.' in filename
+        and
+        filename.rsplit('.', 1)[1].lower()
+        in ALLOWED_EXTENSIONS
+    )
 
 
 # =========================================================
@@ -66,7 +101,15 @@ def dashboard():
 
     recent_documents = DocumentModel.get_recent_documents()
 
-    recent_logs = AuditLogModel.get_recent_logs()
+    recent_logs = AuditService.get_recent_logs()
+
+    notifications = NotificationModel.get_user_notifications(
+        session['user_id']
+    )
+
+    unread_count = NotificationModel.count_unread(
+        session['user_id']
+    )
 
     return render_template(
         'admin/dashboard.html',
@@ -80,7 +123,9 @@ def dashboard():
         rejected_documents=rejected_documents,
 
         recent_documents=recent_documents,
-        recent_logs=recent_logs
+        recent_logs=recent_logs,
+        notifications=notifications,
+        unread_count=unread_count
     )
 
 
@@ -149,6 +194,13 @@ def create_user():
             phone
         )
 
+        AuditService.write_log(
+            user_id=session['user_id'],
+            action='CREATE_USER',
+            target_type='USER',
+            description=f'Tạo user {username}'
+        )
+
         print("INSERT THANH CONG")
 
         flash('Tạo user thành công')
@@ -183,12 +235,12 @@ def update_user_role(user_id):
         role
     )
 
-    AuditLogModel.create_log(
-        session['user_id'],
-        'UPDATE_USER_ROLE',
-        'USER',
-        user_id,
-        f"Cập nhật role thành {role}"
+    AuditService.write_log(
+        user_id=session['user_id'],
+        action='UPDATE_USER_ROLE',
+        target_type='USER',
+        target_id=user_id,
+        description=f'Cập nhật role thành {role}'
     )
 
     return redirect('/admin/users')
@@ -215,12 +267,12 @@ def update_user_status(user_id):
         new_status
     )
 
-    AuditLogModel.create_log(
-        session['user_id'],
-        'UPDATE_USER_STATUS',
-        'USER',
-        user_id,
-        'Cập nhật trạng thái tài khoản'
+    AuditService.write_log(
+        user_id=session['user_id'],
+        action='UPDATE_USER_STATUS',
+        target_type='USER',
+        target_id=user_id,
+        description='Cập nhật trạng thái tài khoản'
     )
 
     return redirect('/admin/users')
@@ -258,12 +310,12 @@ def delete_user(user_id):
 
     # ghi log SAU KHI XÓA
     # nhưng dùng admin hiện tại
-    AuditLogModel.create_log(
-        session['user_id'],
-        'DELETE_USER',
-        'USER',
-        user_id,
-        f'Admin đã xóa user {username}'
+    AuditService.write_log(
+        user_id=session['user_id'],
+        action='DELETE_USER',
+        target_type='USER',
+        target_id=user_id,
+        description=f'Admin đã xóa user {username}'
     )
 
     flash('Xóa user thành công')
@@ -319,21 +371,72 @@ def create_document():
         'priority'
     )
 
+    # =====================================================
+    # FILE UPLOAD
+    # =====================================================
+    uploaded_file = request.files.get(
+        'document_file'
+    )
+
+    file_path = ''
+
+    original_filename = ''
+
+    if uploaded_file and uploaded_file.filename != '':
+
+        # check extension
+        if not allowed_file(uploaded_file.filename):
+
+            flash('File không hợp lệ')
+
+            return redirect('/admin/documents')
+
+        original_filename = secure_filename(
+            uploaded_file.filename
+        )
+
+        filename = (
+            f"{uuid.uuid4()}_{original_filename}"
+        )
+        upload_folder = current_app.config[
+            'UPLOAD_FOLDER'
+        ]
+
+        os.makedirs(
+            upload_folder,
+            exist_ok=True
+        )
+
+        save_path = os.path.join(
+            upload_folder,
+            filename
+        )
+
+        uploaded_file.save(save_path)
+
+        file_path = save_path
+
+        original_filename = filename
+
+    # =====================================================
+    # CREATE DOCUMENT
+    # =====================================================
     DocumentModel.create_document(
         title=title,
         content=content,
         document_type=document_type,
         category=category,
         priority=priority,
+        file_path=file_path,
+        original_filename=original_filename,
         created_by=session['user_id']
     )
 
-    AuditLogModel.create_log(
-        session['user_id'],
-        'CREATE_DOCUMENT',
-        'DOCUMENT',
-        None,
-        f"Tạo văn bản {title}"
+    AuditService.write_log(
+        user_id=session['user_id'],
+        action='CREATE_DOCUMENT',
+        target_type='DOCUMENT',
+        description=f'Tạo văn bản {title}'
     )
 
     flash('Tạo văn bản thành công')
@@ -356,12 +459,12 @@ def delete_document(document_id):
         document_id
     )
 
-    AuditLogModel.create_log(
-        session['user_id'],
-        'DELETE_DOCUMENT',
-        'DOCUMENT',
-        document_id,
-        'Xóa văn bản'
+    AuditService.write_log(
+        user_id=session['user_id'],
+        action='DELETE_DOCUMENT',
+        target_type='DOCUMENT',
+        target_id=document_id,
+        description='Xóa văn bản'
     )
 
     flash('Đã xóa văn bản')
@@ -390,12 +493,18 @@ def assign_document(document_id):
         assigned_to
     )
 
-    AuditLogModel.create_log(
-        session['user_id'],
-        'ASSIGN_DOCUMENT',
-        'DOCUMENT',
-        document_id,
-        'Admin phân công văn bản'
+    ns.NotificationService.notify(
+        assigned_to,
+        '📄 Văn bản mới',
+        'Bạn được phân công xử lý văn bản mới'
+    )
+
+    AuditService.write_log(
+        user_id=session['user_id'],
+        action='ASSIGN_DOCUMENT',
+        target_type='DOCUMENT',
+        target_id=document_id,
+        description='Admin phân công văn bản'
     )
 
     flash('Đã phân công văn bản')
@@ -412,7 +521,7 @@ def audit_page():
     if not check_admin():
         return redirect('/')
 
-    logs = AuditLogModel.get_all_logs()
+    logs = AuditService.get_all_logs()
 
     return render_template(
         'admin/audit_logs.html',
@@ -429,9 +538,68 @@ def settings_page():
     if not check_admin():
         return redirect('/')
 
-    return render_template(
-        'admin/settings.html'
+    system_name = SettingsModel.get_setting(
+        'system_name'
     )
+
+    admin_email = SettingsModel.get_setting(
+        'admin_email'
+    )
+
+    ocr_engine = SettingsModel.get_setting(
+        'ocr_engine'
+    )
+
+    return render_template(
+        'admin/settings.html',
+
+        system_name=system_name,
+        admin_email=admin_email,
+        ocr_engine=ocr_engine
+    )
+
+# =========================================================
+# UPDATE SETTINGS
+# =========================================================
+@admin_bp.route(
+    '/admin/settings/update',
+    methods=['POST']
+)
+def update_settings():
+
+    if not check_admin():
+        return redirect('/')
+
+    system_name = request.form.get(
+        'system_name'
+    )
+
+    admin_email = request.form.get(
+        'admin_email'
+    )
+
+    ocr_engine = request.form.get(
+        'ocr_engine'
+    )
+
+    SettingsModel.set_setting(
+        'system_name',
+        system_name
+    )
+
+    SettingsModel.set_setting(
+        'admin_email',
+        admin_email
+    )
+
+    SettingsModel.set_setting(
+        'ocr_engine',
+        ocr_engine
+    )
+
+    flash('Cập nhật settings thành công')
+
+    return redirect('/admin/settings')
 
 # =========================================================
 # SEARCH USERS
@@ -514,12 +682,12 @@ def update_user(user_id):
         role
     )
 
-    AuditLogModel.create_log(
-        session['user_id'],
-        'UPDATE_USER',
-        'USER',
-        user_id,
-        f'Cập nhật user {username}'
+    AuditService.write_log(
+        user_id=session['user_id'],
+        action='UPDATE_USER',
+        target_type='USER',
+        target_id=user_id,
+        description=f'Cập nhật user {username}'
     )
 
     flash('Cập nhật user thành công')
@@ -537,7 +705,7 @@ def workflow_detail(document_id):
     if not check_admin():
         return redirect('/')
 
-    document = DocumentModel.get_document_by_id(
+    document = DocumentModel.get_document_full_detail(
         document_id
     )
 
@@ -667,14 +835,335 @@ def update_document(document_id):
     )
 
     # log audit
-    AuditLogModel.create_log(
-        session['user_id'],
-        'UPDATE_DOCUMENT',
-        'DOCUMENT',
-        document_id,
-        f'Cập nhật văn bản {title}'
+    AuditService.write_log(
+        user_id=session['user_id'],
+        action='UPDATE_DOCUMENT',
+        target_type='DOCUMENT',
+        target_id=document_id,
+        description=f'Cập nhật văn bản {title}'
     )
 
     flash('Cập nhật văn bản thành công')
 
     return redirect('/admin/documents')
+
+# =========================================================
+# PROCESS AI DOCUMENT
+# =========================================================
+@admin_bp.route(
+    '/admin/documents/process-ai/<int:document_id>'
+)
+def process_ai_document(document_id):
+
+    if not check_admin():
+        return redirect('/')
+
+    # lấy document
+    document = DocumentModel.get_document_by_id(
+        document_id
+    )
+
+    if not document:
+
+        flash('Document không tồn tại')
+
+        return redirect('/admin/documents')
+
+    # chưa upload file
+    if not document['file_path']:
+
+        flash('Document chưa có file upload')
+
+        return redirect('/admin/documents')
+
+    # process AI local
+    ai_result = DocumentAIService.process_document(
+        document['file_path']
+    )
+
+    # save db
+    DocumentModel.save_ai_processing_result(
+        document_id=document_id,
+
+        ocr_text=ai_result['ocr_text'],
+
+        ai_summary=ai_result['summary'],
+
+        ai_category=ai_result['category']
+    )
+
+    # audit log
+    AuditService.write_log(
+        user_id=session['user_id'],
+        action='PROCESS_AI_DOCUMENT',
+        target_type='DOCUMENT',
+        target_id=document_id,
+        description='AI xử lý văn bản'
+    )
+
+    flash('AI xử lý văn bản thành công')
+
+    return redirect('/admin/documents')
+
+# =========================================================
+# AI AUTO EXTRACT
+# =========================================================
+@admin_bp.route(
+    '/admin/documents/ai-extract',
+    methods=['POST']
+)
+def ai_extract_document():
+
+    if not check_admin():
+        return jsonify({
+            "success": False
+        })
+
+    file = request.files.get('file')
+
+    if not file:
+
+        return jsonify({
+            "success": False,
+            "message": "Không có file"
+        })
+    if not allowed_file(file.filename):
+
+        return jsonify({
+            "success": False,
+            "message": "File không hợp lệ"
+        })
+
+    # =====================================================
+    # SAVE FILE
+    # =====================================================
+    upload_folder = current_app.config[
+        'UPLOAD_FOLDER'
+    ]
+
+    os.makedirs(upload_folder, exist_ok=True)
+
+    original_filename = secure_filename(
+        file.filename
+    )
+
+    filename = (
+        f"{uuid.uuid4()}_{original_filename}"
+    )
+
+    file_path = os.path.join(
+        upload_folder,
+        filename
+    )
+
+    file.save(file_path)
+
+    # =====================================================
+    # AI PROCESS
+    # =====================================================
+    ai_result = DocumentAIService.process_document(
+        file_path
+    )
+
+    ai_result['file_path'] = file_path
+
+    ai_result['original_filename'] = filename
+
+    return jsonify({
+        "success": True,
+        "data": ai_result
+    })
+
+# =========================================================
+# SEARCH AUDIT LOGS
+# =========================================================
+@admin_bp.route('/admin/audit/search')
+def search_audit_logs():
+
+    if not check_admin():
+        return redirect('/')
+
+    keyword = request.args.get(
+        'keyword',
+        ''
+    )
+
+    logs = AuditLogModel.search_logs(keyword)
+
+    return render_template(
+        'admin/audit_logs.html',
+        logs=logs
+    )
+
+# =========================================================
+# FILTER AUDIT LOGS
+# =========================================================
+@admin_bp.route('/admin/audit/filter')
+def filter_audit_logs():
+
+    if not check_admin():
+        return redirect('/')
+
+    action = request.args.get(
+        'action',
+        ''
+    )
+
+    logs = AuditLogModel.filter_logs(action)
+
+    return render_template(
+        'admin/audit_logs.html',
+        logs=logs
+    )
+
+# =========================================================
+# APPROVE DOCUMENT
+# =========================================================
+@admin_bp.route(
+    '/admin/documents/approve/<int:document_id>'
+)
+def approve_document(document_id):
+
+    if not check_admin():
+        return redirect('/')
+
+    DocumentModel.update_document_status(
+        document_id,
+        'approved'
+    )
+
+    DocumentModel.create_approval_history(
+        document_id,
+        'APPROVED',
+        'Duyệt văn bản',
+        session['user_id']
+    )
+
+    AuditService.write_log(
+        user_id=session['user_id'],
+        action='APPROVE_DOCUMENT',
+        target_type='DOCUMENT',
+        target_id=document_id,
+        description='Duyệt văn bản'
+    )
+
+    flash('Đã duyệt văn bản')
+
+    return redirect(
+        f'/admin/documents/workflow/{document_id}'
+    )
+
+# =========================================================
+# REJECT DOCUMENT
+# =========================================================
+@admin_bp.route(
+    '/admin/documents/reject/<int:document_id>',
+    methods=['POST']
+)
+def reject_document(document_id):
+
+    if not check_admin():
+        return redirect('/')
+
+    reason = request.form.get('reason')
+
+    DocumentModel.reject_document(
+        document_id,
+        reason
+    )
+
+    DocumentModel.create_approval_history(
+        document_id,
+        'REJECTED',
+        reason,
+        session['user_id']
+    )
+
+    AuditService.write_log(
+        user_id=session['user_id'],
+        action='REJECT_DOCUMENT',
+        target_type='DOCUMENT',
+        target_id=document_id,
+        description='Từ chối văn bản'
+    )
+
+    flash('Đã từ chối văn bản')
+
+    return redirect(
+        f'/admin/documents/workflow/{document_id}'
+    )
+
+# =========================================================
+# COMMENT DOCUMENT
+# =========================================================
+@admin_bp.route(
+    '/admin/documents/comment/<int:document_id>',
+    methods=['POST']
+)
+def comment_document(document_id):
+
+    if not check_admin():
+        return redirect('/')
+
+    comment = request.form.get('comment')
+
+    DocumentModel.add_comment(
+        document_id,
+        session['user_id'],
+        comment
+    )
+
+    DocumentModel.create_approval_history(
+        document_id,
+        'COMMENT',
+        comment,
+        session['user_id']
+    )
+
+    flash('Đã thêm bình luận')
+
+    return redirect(
+        f'/admin/documents/workflow/{document_id}'
+    )
+
+# =========================================================
+# NOTIFICATIONS PAGE
+# =========================================================
+@admin_bp.route('/notifications')
+def notifications_page():
+
+    if 'user_id' not in session:
+        return redirect('/')
+
+    notifications = (
+        NotificationModel.get_user_notifications(
+            session['user_id']
+        )
+    )
+
+    unread_count = NotificationModel.count_unread(
+        session['user_id']
+    )
+
+    return render_template(
+        'admin/notifications.html',
+        notifications=notifications,
+        unread_count=unread_count
+    )
+
+# =========================================================
+# MARK NOTIFICATION AS READ
+# =========================================================
+@admin_bp.route(
+    '/notifications/read/<int:notification_id>'
+)
+def mark_notification_read(notification_id):
+
+    if 'user_id' not in session:
+        return redirect('/')
+
+    NotificationModel.mark_as_read(
+        notification_id
+    )
+
+    return redirect('/notifications')

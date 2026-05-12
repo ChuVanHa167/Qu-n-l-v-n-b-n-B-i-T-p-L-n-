@@ -175,3 +175,206 @@ if(closeModal){
     });
 
 }
+
+// ==========================================
+// AI AUTO EXTRACT
+// ==========================================
+async function processAI() {
+
+    const fileInput = document.getElementById(
+        'document_file'
+    );
+
+    if (!fileInput.files.length) {
+
+        alert("Hãy chọn file");
+
+        return;
+    }
+
+    // =====================================
+    // SHOW AI BOX
+    // =====================================
+    const aiBox = document.getElementById(
+        'ai_processing_box'
+    );
+
+    const progressBar = document.getElementById(
+        'ocr_progress_bar'
+    );
+
+    const statusText = document.getElementById(
+        'ocr_status_text'
+    );
+
+    const liveText = document.getElementById(
+        'ocr_live_text'
+    );
+
+    aiBox.style.display = 'block';
+
+    progressBar.style.width = '0%';
+
+    liveText.innerHTML = '';
+
+    statusText.innerHTML =
+        'AI đang đọc tài liệu...';
+
+    // =====================================
+    // FAKE AI SCAN EFFECT
+    // =====================================
+    let progress = 0;
+
+    const fakeScan = setInterval(() => {
+
+        progress += 10;
+
+        progressBar.style.width =
+            progress + '%';
+
+        statusText.innerHTML =
+            'AI đang OCR tài liệu... ' +
+            progress + '%';
+
+        liveText.innerHTML +=
+            "▋ Đang phân tích dữ liệu...\n";
+
+        liveText.scrollTop =
+            liveText.scrollHeight;
+
+        if(progress >= 90){
+
+            clearInterval(fakeScan);
+        }
+
+    }, 300);
+
+    // =====================================
+    // SEND FILE
+    // =====================================
+    const formData = new FormData();
+
+    formData.append(
+        'file',
+        fileInput.files[0]
+    );
+
+    try {
+
+        const response = await fetch(
+            '/admin/documents/ai-extract',
+            {
+                method: 'POST',
+                body: formData
+            }
+        );
+
+        const result = await response.json();
+
+        clearInterval(fakeScan);
+
+        progressBar.style.width = '100%';
+
+        statusText.innerHTML =
+            'AI xử lý hoàn tất';
+
+        if (!result.success) {
+
+            alert(result.message);
+
+            return;
+        }
+
+        const data = result.data;
+
+        // =================================
+        // SHOW OCR TEXT
+        // =================================
+        liveText.innerHTML =
+            data.ocr_text.substring(0, 3000);
+
+        // =================================
+        // AUTO FILL
+        // =================================
+        document.querySelector(
+            'input[name="title"]'
+        ).value = data.title || '';
+
+        document.querySelector(
+            'textarea[name="content"]'
+        ).value = data.content || '';
+
+        document.querySelector(
+            'select[name="document_type"]'
+        ).value =
+            data.document_type || 'incoming';
+
+        document.querySelector(
+            'select[name="category"]'
+        ).value =
+            data.category || 'Nội bộ';
+
+        document.querySelector(
+            'select[name="priority"]'
+        ).value =
+            data.priority || 'normal';
+
+        alert("AI xử lý thành công");
+
+    } catch (error) {
+
+        console.log(error);
+
+        alert("AI xử lý thất bại");
+    }
+}
+
+const documentNumberInput = document.querySelector(
+    'input[name="document_number"]'
+);
+
+if(documentNumberInput){
+
+    documentNumberInput.value =
+        data.document_number || '';
+}
+
+const signerInput = document.querySelector(
+    'input[name="signer"]'
+);
+
+if(signerInput){
+
+    signerInput.value =
+        data.signer || '';
+}
+
+const issuerInput = document.querySelector(
+    'input[name="issuer"]'
+);
+
+if(issuerInput){
+
+    issuerInput.value =
+        data.issuer || '';
+}
+
+const issueDateInput = document.querySelector(
+    'input[name="issue_date"]'
+);
+
+if(issueDateInput){
+
+    issueDateInput.value =
+        data.issue_date || '';
+}
+
+const keywordInput = document.querySelector(
+    'input[name="keywords"]'
+);
+
+if(keywordInput){
+
+    keywordInput.value =
+        data.keywords || '';
+}

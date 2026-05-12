@@ -42,65 +42,82 @@ Dashboard Admin
 
 {% block dashboard_content %}
 
-<!-- ===================================== -->
 <!-- ALERT -->
-<!-- ===================================== -->
-<div class="alert">
+<div class="alert alert-warning">
     ⚠️ Hiện có {{ pending_documents }} văn bản đang chờ xử lý
 </div>
 
-<!-- ===================================== -->
+<br>
+
 <!-- STATS -->
-<!-- ===================================== -->
-<div class="cards">
+<div class="admin-grid">
 
-    <div class="stats-card">
-        <p>Tổng người dùng</p>
-        <h2>{{ total_users }}</h2>
+    <div class="card">
+        <h3>👥 Người dùng</h3>
+        <h1>{{ total_users }}</h1>
+        <p>Tổng tài khoản hệ thống</p>
     </div>
 
-    <div class="stats-card">
-        <p>Tổng văn bản</p>
-        <h2>{{ total_documents }}</h2>
+    <div class="card">
+        <h3>📄 Văn bản</h3>
+        <h1>{{ total_documents }}</h1>
+        <p>Tổng văn bản đã upload</p>
     </div>
 
-    <div class="stats-card">
-        <p>Đang chờ duyệt</p>
-        <h2>{{ pending_documents }}</h2>
+    <div class="card">
+        <h3>🕒 Chờ duyệt</h3>
+        <h1>{{ pending_documents }}</h1>
+        <p>Đang chờ xử lý</p>
     </div>
 
-    <div class="stats-card">
-        <p>Đã hoàn thành</p>
-        <h2>{{ completed_documents }}</h2>
+    <div class="card">
+        <h3>✅ Đã duyệt</h3>
+        <h1>{{ approved_documents }}</h1>
+        <p>Hoàn thành xử lý</p>
     </div>
 
 </div>
 
-<!-- ===================================== -->
+<br>
+
 <!-- QUICK ACTION -->
-<!-- ===================================== -->
 <div class="quick-actions">
 
     <a href="/admin/users" class="btn">
         👥 Quản lý User
     </a>
 
-    <a href="/admin/documents" class="btn btn-success">
-        📄 Quản lý Văn bản
+    <a href="/admin/documents"
+       class="btn btn-success">
+
+        📄 Văn bản
+
     </a>
 
-    <a href="/admin/audit" class="btn btn-warning">
-        📜 Xem Audit
+    <a href="/admin/audit"
+       class="btn btn-warning">
+
+        📜 Audit Logs
+
+    </a>
+
+    <a href="/admin/settings"
+       class="btn btn-danger">
+
+        ⚙️ Settings
+
     </a>
 
 </div>
 
-<!-- ===================================== -->
-<!-- AI PROCESS -->
-<!-- ===================================== -->
-<div class="chart-box">
+<br>
 
-    <h3>🤖 AI Processing Pipeline</h3>
+<!-- AI PIPELINE -->
+<div class="card">
+
+    <h3>🤖 AI Processing Workflow</h3>
+
+    <br>
 
     <div class="timeline">
 
@@ -112,37 +129,104 @@ Dashboard Admin
 
         <li>🔍 AI trích xuất dữ liệu</li>
 
-        <li>✅ Chuyển quy trình phê duyệt</li>
+        <li>✅ Chuyển phê duyệt</li>
 
     </div>
 
 </div>
 
-<!-- ===================================== -->
-<!-- RECENT ACTIVITIES -->
-<!-- ===================================== -->
 <br>
 
-<h2>📌 Hoạt động gần đây</h2>
+<div class="settings-grid">
 
-<ul class="timeline">
+    <!-- RECENT DOCS -->
+    <div class="card">
 
-    <li>
-        Admin tạo tài khoản văn thư mới
-    </li>
+        <h3>📄 Văn bản gần đây</h3>
 
-    <li>
-        Hệ thống AI xử lý công văn tuyển sinh
-    </li>
+        <br>
 
-    <li>
-        Văn thư cập nhật trạng thái xử lý
-    </li>
+        <table class="table">
 
-    <li>
-        Nhân viên gửi văn bản nội bộ
-    </li>
+            <thead>
 
-</ul>
+                <tr>
+                    <th>Tiêu đề</th>
+                    <th>Trạng thái</th>
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                {% for doc in recent_documents %}
+
+                <tr>
+
+                    <td>
+                        {{ doc.title }}
+                    </td>
+
+                    <td>
+
+                        <span class="status status-{{ doc.status }}">
+                            {{ doc.status }}
+                        </span>
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+    <!-- RECENT LOGS -->
+    <div class="card">
+
+        <h3>📜 Audit Logs</h3>
+
+        <br>
+
+        <table class="table">
+
+            <thead>
+
+                <tr>
+                    <th>Action</th>
+                    <th>User</th>
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                {% for log in recent_logs %}
+
+                <tr>
+
+                    <td>
+                        {{ log.action }}
+                    </td>
+
+                    <td>
+                        {{ log.username }}
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
 
 {% endblock %}
