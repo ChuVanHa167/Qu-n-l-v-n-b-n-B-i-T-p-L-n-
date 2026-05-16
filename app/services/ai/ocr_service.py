@@ -2,18 +2,45 @@
 # FILE: app/services/ai/ocr_service.py
 # =========================================================
 
-import os
-
 import pytesseract
 
-from PIL import Image
+from PIL import Image, ImageFilter, ImageEnhance
 
 from pdf2image import convert_from_path
 
 from docx import Document
 
+from PyPDF2 import PdfReader
+
 
 class OCRService:
+
+    # =================================================
+    # PREPROCESS IMAGE
+    # =================================================
+    @staticmethod
+    def preprocess_image(image):
+
+        # grayscale
+        image = image.convert('L')
+
+        # tăng tương phản
+        enhancer = ImageEnhance.Contrast(image)
+
+        image = enhancer.enhance(2.5)
+
+        # sharpen
+        image = image.filter(
+            ImageFilter.SHARPEN
+        )
+
+        # threshold
+        image = image.point(
+            lambda x: 0 if x < 160 else 255,
+            '1'
+        )
+
+        return image
 
     @staticmethod
     def extract_text(file_path):
@@ -32,31 +59,81 @@ class OCRService:
             # =================================================
             if extension in ['png', 'jpg', 'jpeg']:
 
+
                 image = Image.open(file_path)
+
+                image = OCRService.preprocess_image(
+                    image
+                )
 
                 text = pytesseract.image_to_string(
                     image,
-                    lang='vie'
+                    lang='vie',
+                    config='--psm 6'
                 )
 
+
+
             # =================================================
-            # PDF OCR
+            # PDF
             # =================================================
+
             elif extension == 'pdf':
 
-                pages = convert_from_path(file_path)
+                try:
 
-                for page in pages:
+                    reader = PdfReader(file_path)
 
-                    page_text = pytesseract.image_to_string(
-                        page,
-                        lang='vie'
+                    pdf_text = ""
+
+                    for page in reader.pages:
+
+                        page_content = page.extract_text()
+
+                        if page_content:
+
+                            pdf_text += (
+                                page_content + "\n"
+                            )
+
+                    # =========================================
+                    # nếu đọc được text thật
+                    # =========================================
+                    if len(pdf_text.strip()) > 300:
+
+                        text = pdf_text
+
+                    # =========================================
+                    # fallback OCR
+                    # =========================================
+                    else:
+
+                        raise Exception()
+
+                except Exception:
+
+                    pages = convert_from_path(
+                        file_path,
+                        dpi=300
                     )
 
-                    text += page_text + "\n"
+                    for page in pages:
+
+                        page = OCRService.preprocess_image(
+                            page
+                        )
+
+                        page_text = pytesseract.image_to_string(
+                            page,
+                            lang='vie',
+                            config='--oem 3 --psm 6'
+                        )
+
+                        text += page_text + "\n"
+
 
             # =================================================
-            # DOCX READER
+            # DOCX
             # =================================================
             elif extension == 'docx':
 
@@ -64,10 +141,14 @@ class OCRService:
 
                 for paragraph in doc.paragraphs:
 
-                    text += paragraph.text + "\n"
+                    if paragraph.text.strip():
+
+                        text += (
+                            paragraph.text + "\n"
+                        )
 
             # =================================================
-            # TXT FILE
+            # TXT
             # =================================================
             elif extension == 'txt':
 
@@ -78,6 +159,15 @@ class OCRService:
                 ) as file:
 
                     text = file.read()
+
+            # =================================================
+            # CLEAN OCR NOISE
+            # =================================================
+            text = text.replace('|', 'I')
+
+            text = text.replace('“', '"')
+
+            text = text.replace('”', '"')
 
             return text.strip()
 

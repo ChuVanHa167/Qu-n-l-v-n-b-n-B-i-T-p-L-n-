@@ -3,10 +3,17 @@
 # =========================================================
 
 from app.services.ai.ocr_service import OCRService
-from app.services.ai.summary_service import SummaryService
-from app.services.ai.category_service import CategoryService
+
+from app.services.ai.summary_service import (
+    SummaryService
+)
+
 from app.services.ai.extraction_service import (
     ExtractionService
+)
+
+from app.services.ai.brain_service import (
+    BrainService
 )
 
 
@@ -18,85 +25,95 @@ class DocumentAIService:
         file_path
     ):
 
-        # OCR
+        # =============================================
+        # OCR FULL TEXT
+        # =============================================
         ocr_text = OCRService.extract_text(
             file_path
         )
 
-        # SUMMARY
-        summary = SummaryService.generate_summary(
-            ocr_text
-        )
-
-        # CATEGORY
-        category = CategoryService.detect_category(
-            ocr_text
-        )
-
-        # TITLE
-        title = ExtractionService.extract_title(
-            ocr_text
-        )
-
-        # DOCUMENT TYPE
-        document_type = (
-            ExtractionService.extract_document_type(
-                ocr_text
-            )
-        )
-
-        # PRIORITY
-        priority = (
-            ExtractionService.extract_priority(
-                ocr_text
-            )
-        )
-
-        # EXTRA METADATA
-        document_number = (
-            ExtractionService.extract_document_number(
-                ocr_text
-            )
-        )
-
-        issue_date = (
-            ExtractionService.extract_issue_date(
-                ocr_text
-            )
-        )
-
-        signer = (
-            ExtractionService.extract_signer(
-                ocr_text
-            )
-        )
-
-        issuer = (
-            ExtractionService.extract_issuer(
-                ocr_text
-            )
-        )
-
-        keywords = (
-            ExtractionService.extract_keywords(
-                ocr_text
-            )
-        )
-
-        # CLEAN CONTENT
-        content = (
+        cleaned_text = (
             ExtractionService.clean_content(
                 ocr_text
             )
         )
 
+        # =============================================
+        # AI SEMANTIC ANALYSIS
+        # =============================================
+        semantic = (
+            BrainService.semantic_document_analysis(
+                cleaned_text
+            )
+        )
+
+        # =============================================
+        # SUMMARY
+        # =============================================
+        summary = SummaryService.generate_summary(
+            cleaned_text
+        )
+
+        # =============================================
+        # EXTRACTION
+        # =============================================
+        title = ExtractionService.extract_title(
+            cleaned_text
+        )
+
+        document_type = (
+            ExtractionService.extract_document_type(
+                cleaned_text
+            )
+        )
+
+        priority = (
+            ExtractionService.extract_priority(
+                cleaned_text
+            )
+        )
+
+        category = (
+            ExtractionService.extract_category(
+                cleaned_text
+            )
+        )
+
+        document_number = (
+            ExtractionService.extract_document_number(
+                cleaned_text
+            )
+        )
+
+        issue_date = (
+            ExtractionService.extract_issue_date(
+                cleaned_text
+            )
+        )
+
+        signer = (
+            ExtractionService.extract_signer(
+                cleaned_text
+            )
+        )
+
+        issuer = (
+            ExtractionService.extract_issuer(
+                cleaned_text
+            )
+        )
+
+        keywords = (
+            ExtractionService.extract_keywords(
+                cleaned_text
+            )
+        )
+
         return {
 
-            "ocr_text": ocr_text,
+            "ocr_text": cleaned_text,
 
             "summary": summary,
-
-            "category": category,
 
             "title": title,
 
@@ -104,30 +121,17 @@ class DocumentAIService:
 
             "priority": priority,
 
-            "content": content,
+            "category": category,
 
-            "document_number":
-                ExtractionService.extract_document_number(
-                    ocr_text
-                ),
+            "document_number": document_number,
 
-            "issue_date":
-                ExtractionService.extract_issue_date(
-                    ocr_text
-                ),
+            "issue_date": issue_date,
 
-            "signer":
-                ExtractionService.extract_signer(
-                    ocr_text
-                ),
+            "signer": signer,
 
-            "issuer":
-                ExtractionService.extract_issuer(
-                    ocr_text
-                ),
+            "issuer": issuer,
 
-            "keywords":
-                ExtractionService.extract_keywords(
-                    ocr_text
-                )
+            "keywords": keywords,
+
+            "sentences": semantic["sentences"]
         }

@@ -1,12 +1,82 @@
+
 # =========================================================
 # FILE: app/services/ai/brain_service.py
 # =========================================================
 
 import re
+
 from collections import Counter
 
 
 class BrainService:
+
+    # =====================================================
+    # CLEAN TEXT
+    # =====================================================
+    @staticmethod
+    def normalize_text(text):
+
+        if not text:
+            return ""
+
+        text = text.replace('\r', '\n')
+
+        text = re.sub(r'[ \t]+', ' ', text)
+
+        text = re.sub(r'\n{2,}', '\n', text)
+
+        return text.strip()
+
+    # =====================================================
+    # SPLIT PARAGRAPHS
+    # =====================================================
+    @classmethod
+    def split_paragraphs(
+        cls,
+        text
+    ):
+
+        text = cls.normalize_text(text)
+
+        paragraphs = []
+
+        for p in text.split('\n'):
+
+            p = p.strip()
+
+            if len(p) > 30:
+
+                paragraphs.append(p)
+
+        return paragraphs
+
+    # =====================================================
+    # SPLIT SENTENCES
+    # =====================================================
+    @staticmethod
+    def split_sentences(text):
+
+        if not text:
+            return []
+
+        sentences = re.split(
+            r'(?<=[\.\!\?])\s+',
+            text
+        )
+
+        clean_sentences = []
+
+        for sentence in sentences:
+
+            sentence = sentence.strip()
+
+            if len(sentence) > 15:
+
+                clean_sentences.append(
+                    sentence
+                )
+
+        return clean_sentences
 
     # =====================================================
     # TOKENIZE
@@ -19,12 +89,14 @@ class BrainService:
 
         text = text.lower()
 
-        # bỏ ký tự đặc biệt
-        text = re.sub(r'[^\w\s]', ' ', text)
+        text = re.sub(
+            r'[^\w\sàáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ]',
+            ' ',
+            text
+        )
 
         words = text.split()
 
-        # stop words cơ bản
         stop_words = {
 
             'và',
@@ -47,7 +119,15 @@ class BrainService:
             'tại',
             'ngày',
             'tháng',
-            'năm'
+            'năm',
+            'cộng',
+            'hòa',
+            'xã',
+            'hội',
+            'chủ',
+            'nghĩa',
+            'việt',
+            'nam'
         }
 
         return [
@@ -76,7 +156,7 @@ class BrainService:
 
         counter = Counter(words)
 
-        return counter.most_common(20)
+        return counter.most_common(30)
 
     # =====================================================
     # SENTENCE SCORE
@@ -98,6 +178,14 @@ class BrainService:
 
                 score += freq
 
+        length = len(
+            sentence.split()
+        )
+
+        if 12 <= length <= 40:
+
+            score += 8
+
         return score
 
     # =====================================================
@@ -107,51 +195,163 @@ class BrainService:
     def intelligent_summary(
         cls,
         text,
-        max_sentences=5
+        max_sentences=6
     ):
 
         if not text:
             return ""
 
-        # tách câu
-        sentences = re.split(
-            r'[.!?]\s+',
+        text = cls.normalize_text(text)
+
+        sentences = cls.split_sentences(
             text
         )
 
-        keywords = cls.keyword_frequency(text)
+        keywords = cls.keyword_frequency(
+            text
+        )
+
+        important_patterns = [
+
+            'quyết định',
+            'yêu cầu',
+            'đề nghị',
+            'thông báo',
+            'triển khai',
+            'thực hiện',
+            'căn cứ',
+            'nhằm',
+            'giao cho',
+            'chịu trách nhiệm',
+            'áp dụng',
+            'ban hành'
+        ]
 
         scored_sentences = []
 
-        for sentence in sentences:
+        for index, sentence in enumerate(
+            sentences
+        ):
 
             score = cls.sentence_score(
                 sentence,
                 keywords
             )
 
+            lower = sentence.lower()
+
+            # =================================
+            # boost semantic
+            # =================================
+            for pattern in important_patterns:
+
+                if pattern in lower:
+
+                    score += 15
+
+            # =================================
+            # ưu tiên đoạn đầu
+            # =================================
+            if index < 10:
+
+                score += 8
+
+            # =================================
+            # câu vừa phải
+            # =================================
+            word_count = len(
+                sentence.split()
+            )
+
+            if 15 <= word_count <= 45:
+
+                score += 10
+
+            # =================================
+            # loại OCR noise
+            # =================================
+            if len(sentence) < 20:
+
+                score -= 20
+
+            if sentence.count('.....') > 0:
+
+                score -= 30
+
             scored_sentences.append({
+
                 "sentence": sentence,
-                "score": score
+
+                "score": score,
+
+                "index": index
             })
 
-        # sort theo score
         scored_sentences.sort(
             key=lambda x: x['score'],
             reverse=True
         )
 
-        # lấy top câu
         top_sentences = scored_sentences[
             :max_sentences
         ]
 
-        summary = '. '.join([
-            item['sentence']
-            for item in top_sentences
-        ])
+        top_sentences.sort(
+            key=lambda x: x['index']
+        )
 
-        return summary[:1200]
+        final_summary = []
+
+        for item in top_sentences:
+
+            final_summary.append(
+                item['sentence']
+            )
+
+        return '\n\n'.join(
+            final_summary
+        )[:2000]
+
+
+    # =====================================================
+    # DOCUMENT SEMANTIC ANALYSIS
+    # =====================================================
+    @classmethod
+    def semantic_document_analysis(
+        cls,
+        text
+    ):
+
+        text = cls.normalize_text(
+            text
+        )
+
+        paragraphs = cls.split_paragraphs(
+            text
+        )
+
+        sentences = cls.split_sentences(
+            text
+        )
+
+        keywords = cls.keyword_frequency(
+            text
+        )
+
+        summary = cls.intelligent_summary(
+            text
+        )
+
+        return {
+
+            "paragraphs": paragraphs,
+
+            "sentences": sentences,
+
+            "keywords": keywords,
+
+            "summary": summary
+        }
 
     # =====================================================
     # CLASSIFY DOCUMENT
@@ -207,9 +407,9 @@ class BrainService:
 
             for keyword in keywords:
 
-                if keyword in text:
-
-                    score += 1
+                score += text.count(
+                    keyword
+                )
 
             scores[category] = score
 

@@ -3,279 +3,219 @@
 {% block page_title %}
 Chi tiết văn bản
 {% endblock %}
+{% block sidebar %}
+<li>
+    <a href="/admin">
+        📊 Dashboard
+    </a>
+</li>
+
+<li>
+    <a href="/admin/users">
+        👥 Users
+    </a>
+</li>
+
+<li>
+    <a href="/admin/documents">
+        📄 Documents
+    </a>
+</li>
+
+<li>
+    <a href="/admin/audit">
+        📜 Audit Logs
+    </a>
+</li>
+
+<li class="active">
+    <a href="/admin/settings">
+        ⚙️ Settings
+    </a>
+</li>
+{% endblock %}
 
 {% block dashboard_content %}
 
-<div class="card">
+<div class="document-detail-page">
 
-    <h2>
-        📄 {{ document.title }}
-    </h2>
+    <!-- ================================= -->
+    <!-- HERO -->
+    <!-- ================================= -->
+    <div class="document-hero">
 
-    <br>
+        <div class="hero-top">
 
-    <p>
-        {{ document.content }}
-    </p>
+            <div class="doc-badge">
+                📄 {{ document.document_type }}
+            </div>
 
-    <br>
+            <a
+                href="/admin/documents"
+                class="btn"
+            >
+                ← Quay lại
+            </a>
 
-    <p>
-        <strong>Loại:</strong>
-        {{ document.document_type }}
-    </p>
+        </div>
 
-    <p>
-        <strong>Trạng thái:</strong>
-        {{ document.status }}
-    </p>
+        <h1>
+            {{ document.title }}
+        </h1>
 
-    <p>
-        <strong>Độ ưu tiên:</strong>
-        {{ document.priority }}
-    </p>
+        <div class="doc-meta">
 
-</div>
+            <div class="meta-item">
+                📄 {{ document.document_number or 'N/A' }}
+            </div>
 
-<br>
+            <div class="meta-item">
+                🏢 {{ document.issuer or 'N/A' }}
+            </div>
 
-<!-- ================================= -->
-<!-- AI RESULT -->
-<!-- ================================= -->
-<div class="card">
+            <div class="meta-item">
+                📅 {{ document.issue_date or 'N/A' }}
+            </div>
 
-    <h3>
-        🤖 AI Analysis
-    </h3>
-
-    <br>
-
-    <p>
-        <strong>AI Status:</strong>
-
-        {% if document.ai_processed == 1 %}
-
-            ✅ Processed
-
-        {% else %}
-
-            ❌ Not Processed
-
-        {% endif %}
-    </p>
-
-    <br>
-
-    <p>
-        <strong>AI Category:</strong>
-        {{ document.ai_category or 'N/A' }}
-    </p>
-
-    <br>
-
-    <p>
-        <strong>AI Summary:</strong>
-    </p>
-
-    <div class="audit-item">
-        {{ document.ai_summary or 'Chưa có dữ liệu AI' }}
-    </div>
-
-    <br>
-
-    <p>
-        <strong>OCR Text:</strong>
-    </p>
-
-    <textarea rows="10">
-{{ document.ocr_text or '' }}
-    </textarea>
-
-</div>
-
-<br>
-
-<!-- ================================= -->
-<!-- ASSIGN -->
-<!-- ================================= -->
-<div class="card">
-
-    <h3>
-        👤 Phân công xử lý
-    </h3>
-
-    <br>
-
-    <form
-        method="POST"
-        action="/admin/documents/assign/{{ document.id }}"
-    >
-
-        <select name="assigned_to">
-
-            {% for user in users %}
-
-            {% if user.role == 'staff' %}
-
-            <option value="{{ user.id }}">
-
-                {{ user.username }}
-
-            </option>
-
-            {% endif %}
-
-            {% endfor %}
-
-        </select>
-
-        <button class="btn">
-            Phân công
-        </button>
-
-    </form>
-
-</div>
-
-<br>
-
-<!-- ================================= -->
-<!-- APPROVE / REJECT -->
-<!-- ================================= -->
-<div class="card">
-
-    <h3>
-        ⚙️ Xử lý văn bản
-    </h3>
-
-    <br>
-
-    <a
-        href="/admin/documents/approve/{{ document.id }}"
-        class="btn btn-success"
-    >
-        ✅ Duyệt
-    </a>
-
-    <br><br>
-
-    <form
-        method="POST"
-        action="/admin/documents/reject/{{ document.id }}"
-    >
-
-        <textarea
-            name="reason"
-            rows="4"
-            placeholder="Lý do từ chối"
-        ></textarea>
-
-        <br><br>
-
-        <button class="btn btn-danger">
-            ❌ Từ chối
-        </button>
-
-    </form>
-
-</div>
-
-<br>
-
-<!-- ================================= -->
-<!-- COMMENTS -->
-<!-- ================================= -->
-<div class="card">
-
-    <h3>
-        💬 Bình luận
-    </h3>
-
-    <br>
-
-    <form
-        method="POST"
-        action="/admin/documents/comment/{{ document.id }}"
-    >
-
-        <textarea
-            name="comment"
-            rows="4"
-            placeholder="Nhập bình luận"
-        ></textarea>
-
-        <br><br>
-
-        <button class="btn">
-            Gửi bình luận
-        </button>
-
-    </form>
-
-    <br>
-
-    {% for comment in comments %}
-
-    <div class="audit-item">
-
-        <strong>
-            {{ comment.username }}
-        </strong>
-
-        <br><br>
-
-        {{ comment.comment }}
-
-        <br><br>
-
-        🕒 {{ comment.created_at }}
+        </div>
 
     </div>
 
-    <br>
+    <!-- ================================= -->
+    <!-- GRID -->
+    <!-- ================================= -->
+    <div class="document-grid">
 
-    {% endfor %}
+        <!-- ================================= -->
+        <!-- LEFT -->
+        <!-- ================================= -->
+        <div class="document-left">
 
-</div>
+            <!-- FILE -->
+            <div class="card detail-card">
 
-<br>
+                <div class="section-header">
 
-<!-- ================================= -->
-<!-- TIMELINE -->
-<!-- ================================= -->
-<div class="card">
+                    <div class="card-title">
+                        📎 File văn bản
+                    </div>
 
-    <h3>
-        📜 Timeline xử lý
-    </h3>
+                    {% if document.original_filename %}
+                    <a
+                        href="/admin/documents/download/{{ document.id }}"
+                        target="_blank"
+                        class="btn btn-success"
+                    >
+                        📥 Tải file
+                    </a>
+                    {% endif %}
 
-    <br>
+                </div>
 
-    {% for history in histories %}
+                {% if document.original_filename %}
 
-    <div class="audit-item">
+                    {% set ext = document.original_filename.split('.')[-1].lower() %}
 
-        <strong>
-            {{ history.action }}
-        </strong>
+                    {% if ext == 'pdf' %}
 
-        <br><br>
+                    <iframe
+                        src="/admin/documents/download/{{ document.id }}"
+                        class="pdf-frame"
+                    ></iframe>
 
-        👤 {{ history.username }}
+                    {% elif ext in ['png', 'jpg', 'jpeg'] %}
 
-        <br><br>
+                    <img
+                        src="/admin/documents/download/{{ document.id }}"
+                        class="preview-image"
+                    >
 
-        📝 {{ history.note }}
+                    {% else %}
 
-        <br><br>
+                    <div class="summary-box">
+                        Không hỗ trợ preview file này.
+                    </div>
 
-        🕒 {{ history.created_at }}
+                    {% endif %}
+
+                {% endif %}
+
+            </div>
+
+            <!-- OCR -->
+            <div class="card detail-card">
+
+                <div class="card-title">
+                    🧠 OCR Text
+                </div>
+
+                <div class="ocr-reader">
+                    {{ document.ocr_text }}
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- ================================= -->
+        <!-- RIGHT -->
+        <!-- ================================= -->
+        <div class="document-right">
+
+            <!-- SUMMARY -->
+            <div class="card detail-card">
+
+                <div class="card-title">
+                    🤖 AI Summary
+                </div>
+
+                <div class="summary-box">
+                    {{ document.ai_summary or 'Chưa có dữ liệu AI summary.' }}
+                </div>
+
+            </div>
+
+            <!-- INFO -->
+            <div class="card detail-card">
+
+                <div class="card-title">
+                    📌 Thông tin văn bản
+                </div>
+
+                <div class="info-list">
+
+                    <div class="info-item">
+                        <span>Loại văn bản</span>
+                        <strong>{{ document.document_type }}</strong>
+                    </div>
+
+                    <div class="info-item">
+                        <span>Danh mục</span>
+                        <strong>{{ document.category }}</strong>
+                    </div>
+
+                    <div class="info-item">
+                        <span>Độ ưu tiên</span>
+                        <strong>{{ document.priority }}</strong>
+                    </div>
+
+                    <div class="info-item">
+                        <span>Keywords</span>
+                        <strong>{{ document.keywords }}</strong>
+                    </div>
+
+                    <div class="info-item">
+                        <span>Ngày tạo</span>
+                        <strong>{{ document.created_at }}</strong>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
 
     </div>
-
-    <br>
-
-    {% endfor %}
 
 </div>
 

@@ -42,9 +42,6 @@ Quản lý văn bản
 
 {% block dashboard_content %}
 
-<!-- ===================================== -->
-<!-- HEADER -->
-<!-- ===================================== -->
 <div class="page-header">
 
     <h2>Danh sách văn bản</h2>
@@ -52,9 +49,9 @@ Quản lý văn bản
 </div>
 
 <!-- ===================================== -->
-<!-- CREATE / UPDATE DOCUMENT -->
+<!-- FORM -->
 <!-- ===================================== -->
-<div class="card">
+<div class="card document-form-card">
 
     {% if edit_document %}
 
@@ -67,6 +64,7 @@ Quản lý văn bản
     <form
         method="POST"
         action="/admin/documents/update/{{ edit_document.id }}"
+        enctype="multipart/form-data"
     >
 
     {% else %}
@@ -85,36 +83,89 @@ Quản lý văn bản
 
     {% endif %}
 
-        <input
-            type="file"
-            name="document_file"
-            id="document_file"
-            accept=".pdf,.docx,.png,.jpg,.jpeg"
-            required
+        <!-- ============================== -->
+        <!-- FILE -->
+        <!-- ============================== -->
+        <div class="upload-box">
+
+            <input
+                type="file"
+                name="document_file"
+                id="document_file"
+                accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
+                {% if not edit_document %}required{% endif %}
+            >
+
+            <div id="uploaded_file_preview"></div>
+
+            {% if edit_document and edit_document.original_filename %}
+
+            <div class="existing-file-box">
+
+                <div>
+                    📎 File hiện tại:
+                    <strong>
+                        {{ edit_document.original_filename }}
+                    </strong>
+                </div>
+
+                <br>
+
+                <a
+                    href="/admin/documents/download/{{ edit_document.id }}"
+                    class="btn btn-success"
+                    target="_blank"
+                >
+                    📥 Xem / tải file gốc
+                </a>
+
+            </div>
+
+            {% endif %}
+
+        </div>
+
+        <br>
+
+        <!-- ============================== -->
+        <!-- AI BUTTON -->
+        <!-- ============================== -->
+        <button
+            type="button"
+            class="btn btn-success ai-btn"
+            onclick="processAI()"
         >
+            🤖 AI Auto Fill
+        </button>
 
-        <div id="uploaded_file_preview"></div>
-
-        <!-- ===================================== -->
-        <!-- AI OCR VIEWER -->
-        <!-- ===================================== -->
+        <!-- ============================== -->
+        <!-- AI PROCESSING -->
+        <!-- ============================== -->
         <div
             id="ai_processing_box"
-            style="
-                display:none;
-                margin-top:20px;
-                background:white;
-                border-radius:12px;
-                padding:20px;
-                border:1px solid #ddd;
-            "
+            class="ai-processing-box"
+            style="display:none;"
         >
 
-            <h3>
-                🤖 AI OCR Processing
-            </h3>
+            <div class="ai-header">
 
-            <br>
+                <div class="ai-icon">
+                    🤖
+                </div>
+
+                <div>
+
+                    <h3>
+                        AI Đang Phân Tích Văn Bản
+                    </h3>
+
+                    <div id="ocr_status_text">
+                        Khởi tạo AI...
+                    </div>
+
+                </div>
+
+            </div>
 
             <div class="ocr-progress-wrapper">
 
@@ -125,103 +176,163 @@ Quản lý văn bản
 
             </div>
 
-            <br>
-
-            <div id="ocr_status_text">
-
-                Đang khởi tạo AI...
-
-            </div>
-
-            <br>
-
             <div
                 id="ocr_live_text"
-                style="
-                    background:#111827;
-                    color:#22c55e;
-                    padding:15px;
-                    border-radius:10px;
-                    min-height:120px;
-                    max-height:250px;
-                    overflow:auto;
-                    font-family:monospace;
-                    white-space:pre-wrap;
-                "
+                class="ocr-live-text"
             ></div>
 
         </div>
 
-        <input
-            type="text"
-            name="title"
-            placeholder="Tiêu đề văn bản"
-            value="{{ edit_document.title if edit_document else '' }}"
-            required
-        >
+        <br>
 
-        <br><br>
+        <!-- ============================== -->
+        <!-- MAIN INFO -->
+        <!-- ============================== -->
+        <div class="form-grid">
 
-        <button
-            type="button"
-            class="btn btn-success"
-            onclick="processAI()"
-        >
-            🤖 AI Auto Fill
-        </button>
+            <div class="form-group">
 
-        <br><br>
+                <label>
+                    Tiêu đề văn bản
+                </label>
 
-        <br><br>
+                <input
+                    type="text"
+                    name="title"
+                    placeholder="Tiêu đề văn bản"
+                    value="{{ edit_document.title if edit_document else '' }}"
+                    required
+                >
 
-        <textarea
-            name="content"
-            rows="6"
-            placeholder="Nội dung văn bản"
-        >{{ edit_document.content if edit_document else '' }}</textarea>
+            </div>
 
-        <br><br>
+            <div class="form-group">
 
+                <label>
+                    Số văn bản
+                </label>
+
+                <input
+                    type="text"
+                    name="document_number"
+                    value="{{ edit_document.document_number if edit_document else '' }}"
+                >
+
+            </div>
+
+            <div class="form-group">
+
+                <label>
+                    Đơn vị ban hành
+                </label>
+
+                <input
+                    type="text"
+                    name="issuer"
+                    value="{{ edit_document.issuer if edit_document else '' }}"
+                >
+
+            </div>
+
+            <div class="form-group">
+
+                <label>
+                    Người ký
+                </label>
+
+                <input
+                    type="text"
+                    name="signer"
+                    value="{{ edit_document.signer if edit_document else '' }}"
+                >
+
+            </div>
+
+            <div class="form-group">
+
+                <label>
+                    Ngày ban hành
+                </label>
+
+                <input
+                    type="text"
+                    name="issue_date"
+                    value="{{ edit_document.issue_date if edit_document else '' }}"
+                >
+
+            </div>
+
+            <div class="form-group">
+
+                <label>
+                    Keywords
+                </label>
+
+                <input
+                    type="text"
+                    name="keywords"
+                    value="{{ edit_document.keywords if edit_document else '' }}"
+                >
+
+            </div>
+
+        </div>
+
+        <!-- ============================== -->
+        <!-- SUMMARY -->
+        <!-- ============================== -->
+        <div class="form-group">
+
+            <label>
+                Tóm tắt nội dung AI
+            </label>
+
+            <textarea
+                name="content"
+                rows="8"
+                placeholder="AI Summary..."
+            >{{ edit_document.content if edit_document else '' }}</textarea>
+
+        </div>
+
+        <!-- ============================== -->
+        <!-- OPTIONS -->
+        <!-- ============================== -->
         <div class="filter-bar">
 
             <select name="document_type">
 
-                <option value="incoming"
-                    {% if edit_document and edit_document.document_type == 'incoming' %}
-                        selected
-                    {% endif %}
-                >
+                <option value="incoming">
                     Công văn đến
                 </option>
 
-                <option value="outgoing"
-                    {% if edit_document and edit_document.document_type == 'outgoing' %}
-                        selected
-                    {% endif %}
-                >
+                <option value="outgoing">
                     Công văn đi
                 </option>
 
-                <option value="decision"
-                    {% if edit_document and edit_document.document_type == 'decision' %}
-                        selected
-                    {% endif %}
-                >
+                <option value="decision">
                     Quyết định
                 </option>
 
-                <option value="plan"
-                    {% if edit_document and edit_document.document_type == 'plan' %}
-                        selected
-                    {% endif %}
-                >
+                <option value="plan">
                     Kế hoạch
+                </option>
+
+                <option value="notification">
+                    Thông báo
+                </option>
+
+                <option value="report">
+                    Báo cáo
                 </option>
 
             </select>
 
-            <!-- category -->
             <select name="category">
+
+                <option value="Hành chính">
+                    Hành chính
+                </option>
 
                 <option value="Nhân sự">
                     Nhân sự
@@ -231,8 +342,12 @@ Quản lý văn bản
                     Tài chính
                 </option>
 
-                <option value="Hành chính">
-                    Hành chính
+                <option value="Đào tạo">
+                    Đào tạo
+                </option>
+
+                <option value="Sinh viên">
+                    Sinh viên
                 </option>
 
                 <option value="Nội bộ">
@@ -241,14 +356,13 @@ Quản lý văn bản
 
             </select>
 
-            <!-- priority -->
             <select name="priority">
 
                 <option value="low">
                     Low
                 </option>
 
-                <option value="normal" selected>
+                <option value="normal">
                     Normal
                 </option>
 
@@ -262,106 +376,39 @@ Quản lý văn bản
 
             </select>
 
-            {% if edit_document %}
-
-            <button class="btn btn-success">
-                Update
-            </button>
-
-            <a
-                href="/admin/documents"
-                class="btn btn-danger"
-            >
-                Cancel
-            </a>
-
-            {% else %}
-
-            <button class="btn">
-                Tạo văn bản
-            </button>
-            
-            {% endif %}
-
         </div>
+
+        <br>
+
+        <!-- ============================== -->
+        <!-- ACTION -->
+        <!-- ============================== -->
+        {% if edit_document %}
+
+        <button class="btn btn-success">
+            💾 Cập nhật văn bản
+        </button>
+
+        <a
+            href="/admin/documents"
+            class="btn btn-danger"
+        >
+            Cancel
+        </a>
+
+        {% else %}
+
+        <button class="btn">
+            📄 Tạo văn bản
+        </button>
+
+        {% endif %}
 
     </form>
 
 </div>
 
 <br>
-
-<!-- ===================================== -->
-<!-- FILTER -->
-<!-- ===================================== -->
-<form
-    method="GET"
-    action="/admin/documents/filter"
->
-
-    <div class="filter-bar">
-
-        <input
-            type="text"
-            name="keyword"
-            placeholder="🔍 Tìm kiếm văn bản"
-        >
-
-        <select name="status">
-
-            <option value="">
-                All Status
-            </option>
-
-            <option value="pending">
-                Pending
-            </option>
-
-            <option value="processing">
-                Processing
-            </option>
-
-            <option value="approved">
-                Approved
-            </option>
-
-            <option value="rejected">
-                Rejected
-            </option>
-
-        </select>
-
-        <select name="document_type">
-
-            <option value="">
-                All Type
-            </option>
-
-            <option value="incoming">
-                Incoming
-            </option>
-
-            <option value="outgoing">
-                Outgoing
-            </option>
-
-            <option value="decision">
-                Decision
-            </option>
-
-            <option value="plan">
-                Plan
-            </option>
-
-        </select>
-
-        <button class="btn">
-            Filter
-        </button>
-
-    </div>
-
-</form>
 
 <!-- ===================================== -->
 <!-- TABLE -->
@@ -378,7 +425,7 @@ Quản lý văn bản
 
             <th>Loại</th>
 
-            <th>Trạng thái</th>
+            <th>File</th>
 
             <th>Ngày tạo</th>
 
@@ -402,23 +449,14 @@ Quản lý văn bản
 
             <td>
 
-                {% if document.status == 'pending' %}
+                {% if document.original_filename %}
 
-                <span class="status status-pending">
-                    Pending
-                </span>
-
-                {% elif document.status == 'processing' %}
-
-                <span class="status status-processing">
-                    Processing
-                </span>
-
-                {% else %}
-
-                <span class="status status-done">
-                    Completed
-                </span>
+                <a
+                    href="/admin/documents/download/{{ document.id }}"
+                    target="_blank"
+                >
+                    📎 {{ document.original_filename }}
+                </a>
 
                 {% endif %}
 
@@ -440,13 +478,6 @@ Quản lý văn bản
                     class="btn"
                 >
                     Edit
-                </a>
-
-                <a
-                    href="/admin/documents/process-ai/{{ document.id }}"
-                    class="btn btn-success"
-                >
-                    AI Process
                 </a>
 
                 <a
