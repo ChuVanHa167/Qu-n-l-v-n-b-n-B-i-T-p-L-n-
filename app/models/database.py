@@ -177,6 +177,27 @@ def init_database(app):
             approved_by INTEGER,
 
             approved_at TIMESTAMP,
+            
+            -- =========================================
+            -- ENTERPRISE FEATURES
+            -- =========================================
+            deadline TEXT,
+
+            completed_at TIMESTAMP,
+
+            department_id INTEGER,
+
+            current_step TEXT DEFAULT 'staff_processing',
+
+            is_deleted INTEGER DEFAULT 0,
+
+            deleted_at TIMESTAMP,
+
+            deleted_by INTEGER,
+
+            version INTEGER DEFAULT 1,
+
+            is_archived INTEGER DEFAULT 0,
 
             -- =========================================
             -- TIME
@@ -192,6 +213,12 @@ def init_database(app):
                 REFERENCES users(id),
 
             FOREIGN KEY(approved_by)
+                REFERENCES users(id),
+
+            FOREIGN KEY(department_id)
+                REFERENCES departments(id),
+
+            FOREIGN KEY(deleted_by)
                 REFERENCES users(id)
         )
         """)
@@ -339,6 +366,27 @@ def init_database(app):
         # =================================================
         # INDEXES
         # =================================================
+        # =================================================
+        # DATABASE MIGRATION
+        # =================================================
+
+        # thêm cột is_deleted nếu DB cũ chưa có
+        try:
+            db.execute("""
+                ALTER TABLE documents
+                ADD COLUMN is_deleted INTEGER DEFAULT 0
+            """)
+        except:
+            pass
+
+        # thêm cột deleted_at nếu DB cũ chưa có
+        try:
+            db.execute("""
+                ALTER TABLE documents
+                ADD COLUMN deleted_at TIMESTAMP
+            """)
+        except:
+            pass
         db.execute("""
         CREATE INDEX IF NOT EXISTS idx_documents_status
         ON documents(status)
@@ -357,6 +405,65 @@ def init_database(app):
         db.execute("""
         CREATE INDEX IF NOT EXISTS idx_audit_logs_user
         ON audit_logs(user_id)
+        """)
+
+        # =================================================
+        # DOCUMENT VERSIONS
+        # =================================================
+        db.execute("""
+        CREATE TABLE IF NOT EXISTS document_versions (
+
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+            document_id INTEGER,
+
+            version_number INTEGER,
+
+            title TEXT,
+
+            content TEXT,
+
+            document_type TEXT,
+
+            category TEXT,
+
+            priority TEXT,
+
+            updated_by INTEGER,
+
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+            FOREIGN KEY(document_id)
+                REFERENCES documents(id)
+                ON DELETE CASCADE,
+
+            FOREIGN KEY(updated_by)
+                REFERENCES users(id)
+        )
+        """)
+
+        # =================================================
+        # ROLE PERMISSIONS
+        # =================================================
+        db.execute("""
+        CREATE TABLE IF NOT EXISTS role_permissions (
+
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+            role TEXT,
+
+            permission TEXT
+        )
+        """)
+
+        db.execute("""
+        CREATE INDEX IF NOT EXISTS idx_documents_deleted
+        ON documents(is_deleted)
+        """)
+
+        db.execute("""
+        CREATE INDEX IF NOT EXISTS idx_documents_deadline
+        ON documents(deadline)
         """)
 
         db.commit()

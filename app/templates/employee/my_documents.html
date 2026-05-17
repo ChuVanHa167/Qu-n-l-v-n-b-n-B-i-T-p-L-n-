@@ -1,7 +1,3 @@
-<!-- =========================================
-FILE: app/templates/employee/my_documents.html
-========================================= -->
-
 {% extends "layouts/dashboard_layout.html" %}
 
 {% block page_title %}
@@ -22,62 +18,24 @@ Văn bản của tôi
     </a>
 </li>
 
+<li>
+    <a href="/employee/notifications">
+        🔔 Thông báo
+    </a>
+</li>
+
 {% endblock %}
 
 {% block dashboard_content %}
 
-<!-- PAGE HEADER -->
 <div class="page-header">
 
-    <div>
-        <h2>Danh sách văn bản cá nhân</h2>
-
-        <p class="text-muted">
-            Quản lý và theo dõi các văn bản đã gửi
-        </p>
-    </div>
-
-    <button class="btn"
-            onclick="openModal('createDocumentModal')">
-        ➕ Gửi văn bản mới
-    </button>
+    <h2>
+        📄 Văn bản của tôi
+    </h2>
 
 </div>
 
-<!-- FILTER -->
-<div class="filter-bar">
-
-    <input type="text"
-           id="documentSearch"
-           placeholder="🔍 Tìm kiếm văn bản">
-
-    <select id="statusFilter">
-
-        <option value="">
-            Tất cả trạng thái
-        </option>
-
-        <option value="pending">
-            Pending
-        </option>
-
-        <option value="processing">
-            Processing
-        </option>
-
-        <option value="completed">
-            Completed
-        </option>
-
-        <option value="rejected">
-            Rejected
-        </option>
-
-    </select>
-
-</div>
-
-<!-- TABLE -->
 <div class="card">
 
     <table class="table">
@@ -85,90 +43,49 @@ Văn bản của tôi
         <thead>
 
             <tr>
+
                 <th>ID</th>
+
                 <th>Tiêu đề</th>
+
                 <th>Loại</th>
-                <th>Ưu tiên</th>
+
                 <th>Trạng thái</th>
-                <th>Ngày tạo</th>
-                <th>Thao tác</th>
+
+                <th>Chi tiết</th>
+
             </tr>
 
         </thead>
 
         <tbody>
 
-            {% if documents %}
+            {% for doc in documents %}
 
-                {% for doc in documents %}
+            <tr>
 
-                <tr>
+                <td>#{{ doc.id }}</td>
 
-                    <td>#{{ doc.id }}</td>
+                <td>{{ doc.title }}</td>
 
-                    <td>
-                        {{ doc.title }}
-                    </td>
+                <td>{{ doc.document_type }}</td>
 
-                    <td>
-                        {{ doc.document_type or '---' }}
-                    </td>
+                <td>{{ doc.status }}</td>
 
-                    <td>
-                        {{ doc.priority or 'normal' }}
-                    </td>
+                <td>
 
-                    <td>
+                    <a
+                        href="/employee/document/{{ doc.id }}"
+                        class="btn btn-success"
+                    >
+                        View
+                    </a>
 
-                        <span class="
-                            status
-                            status-{{ doc.status }}
-                        ">
-                            {{ doc.status }}
-                        </span>
+                </td>
 
-                    </td>
+            </tr>
 
-                    <td>
-                        {{ doc.created_at }}
-                    </td>
-
-                    <td class="action-buttons">
-
-                        <a href="/documents/{{ doc.id }}"
-                           class="btn btn-success btn-sm">
-                            View
-                        </a>
-
-                        {% if doc.status == 'pending' %}
-
-                        <a href="/documents/delete/{{ doc.id }}"
-                           class="btn btn-danger btn-sm btn-delete">
-                            Delete
-                        </a>
-
-                        {% endif %}
-
-                    </td>
-
-                </tr>
-
-                {% endfor %}
-
-            {% else %}
-
-                <tr>
-
-                    <td colspan="7"
-                        class="text-center">
-
-                        Chưa có văn bản nào
-
-                    </td>
-
-                </tr>
-
-            {% endif %}
+            {% endfor %}
 
         </tbody>
 
@@ -176,118 +93,4 @@ Văn bản của tôi
 
 </div>
 
-<!-- CREATE MODAL -->
-<div class="modal" id="createDocumentModal">
-
-    <div class="modal-content">
-
-        <div class="modal-header">
-
-            <h3>➕ Gửi văn bản mới</h3>
-
-            <button class="close-btn"
-                    onclick="closeModal('createDocumentModal')">
-                ×
-            </button>
-
-        </div>
-
-        <form method="POST"
-              action="/documents/create"
-              enctype="multipart/form-data">
-
-            <div class="form-group">
-
-                <label>Tiêu đề</label>
-
-                <input type="text"
-                       name="title"
-                       required>
-
-            </div>
-
-            <div class="form-group">
-
-                <label>Loại văn bản</label>
-
-                <select name="document_type">
-
-                    <option value="incoming">
-                        Incoming
-                    </option>
-
-                    <option value="outgoing">
-                        Outgoing
-                    </option>
-
-                    <option value="internal">
-                        Internal
-                    </option>
-
-                </select>
-
-            </div>
-
-            <div class="form-group">
-
-                <label>Mức độ ưu tiên</label>
-
-                <select name="priority">
-
-                    <option value="low">
-                        Low
-                    </option>
-
-                    <option value="normal">
-                        Normal
-                    </option>
-
-                    <option value="high">
-                        High
-                    </option>
-
-                    <option value="urgent">
-                        Urgent
-                    </option>
-
-                </select>
-
-            </div>
-
-            <div class="form-group">
-
-                <label>Nội dung</label>
-
-                <textarea name="content"
-                          rows="5"></textarea>
-
-            </div>
-
-            <div class="form-group">
-
-                <label>File đính kèm</label>
-
-                <input type="file"
-                       name="document_file">
-            </div>
-
-            <div class="modal-footer">
-
-                <button type="submit"
-                        class="btn">
-                    Gửi văn bản
-                </button>
-
-            </div>
-
-        </form>
-
-    </div>
-
-</div>
-
-{% endblock %}
-
-{% block extra_js %}
-<script src="{{ url_for('static', filename='js/document.js') }}"></script>
 {% endblock %}

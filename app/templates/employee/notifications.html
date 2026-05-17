@@ -1,0 +1,39 @@
+{% extends "layouts/dashboard_layout.html" %}
+
+{% block page_title %}
+Thông báo
+{% endblock %}
+
+{% block dashboard_content %}
+
+<div class="page-header">
+
+    <h2>
+        🔔 Thông báo
+    </h2>
+
+</div>
+
+<div class="card">
+
+    <ul class="timeline">
+
+        {% for item in notifications %}
+
+        <li>
+
+            <b>{{ item.title }}</b>
+
+            <br>
+
+            {{ item.message }}
+
+        </li>
+
+        {% endfor %}
+
+    </ul>
+
+</div>
+
+{% endblock %}

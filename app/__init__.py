@@ -8,7 +8,7 @@ from flask import Flask
 # IMPORT DATABASE
 # =========================================================
 from app.models.database import init_database
-
+from app.controllers.staff_controller import staff_bp
 # =========================================================
 # IMPORT ROUTES
 # =========================================================

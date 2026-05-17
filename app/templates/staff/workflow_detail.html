@@ -1,0 +1,154 @@
+<!-- =========================================
+FILE: app/templates/staff/workflow_detail.html
+========================================= -->
+
+{% extends "layouts/dashboard_layout.html" %}
+
+{% block page_title %}
+Chi tiết văn bản
+{% endblock %}
+
+{% block sidebar %}
+
+<li>
+    <a href="/staff">
+        📊 Dashboard
+    </a>
+</li>
+
+<li>
+    <a href="/staff/assigned-documents">
+        📥 Văn bản được giao
+    </a>
+</li>
+
+<li class="active">
+    <a href="#">
+        📄 Chi tiết
+    </a>
+</li>
+
+{% endblock %}
+
+{% block dashboard_content %}
+
+<div class="page-header">
+
+    <div>
+
+        <h2>📄 Chi tiết văn bản</h2>
+
+        <p class="text-muted">
+            Theo dõi nội dung và tiến độ
+        </p>
+
+    </div>
+
+</div>
+
+<div class="card">
+
+    <div class="detail-grid">
+
+        <div class="detail-item">
+            <label>Tiêu đề</label>
+            <p>{{ document.title }}</p>
+        </div>
+
+        <div class="detail-item">
+            <label>Loại</label>
+            <p>{{ document.document_type }}</p>
+        </div>
+
+        <div class="detail-item">
+            <label>Ưu tiên</label>
+            <p>{{ document.priority }}</p>
+        </div>
+
+        <div class="detail-item">
+            <label>Trạng thái</label>
+
+            <span class="status status-{{ document.status }}">
+                {{ document.status }}
+            </span>
+
+        </div>
+
+    </div>
+
+    <br>
+
+    <div class="form-group">
+
+        <label>Nội dung</label>
+
+        <textarea
+            rows="12"
+            readonly
+        >{{ document.content }}</textarea>
+
+    </div>
+
+    <br>
+
+    <div class="quick-actions">
+
+        <button class="btn btn-primary">
+            📝 Thêm ghi chú
+        </button>
+
+        <button class="btn btn-warning">
+            📤 Chuyển tiếp
+        </button>
+
+        <button class="btn btn-danger">
+            ❌ Từ chối
+        </button>
+
+        {% if document.status == 'pending' %}
+
+        <form
+            method="POST"
+            action="/staff/update-status/{{ document.id }}"
+        >
+
+            <input
+                type="hidden"
+                name="status"
+                value="processing"
+            >
+
+            <button class="btn btn-warning">
+                Nhận xử lý
+            </button>
+
+        </form>
+
+        {% endif %}
+
+        {% if document.status == 'processing' %}
+
+        <form
+            method="POST"
+            action="/staff/update-status/{{ document.id }}"
+        >
+
+            <input
+                type="hidden"
+                name="status"
+                value="approved"
+            >
+
+            <button class="btn btn-success">
+                ✅ Hoàn thành
+            </button>
+
+        </form>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+{% endblock %}

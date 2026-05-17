@@ -285,3 +285,33 @@ class UserModel:
         ))
 
         db.commit()
+
+    # =====================================================
+    # GET USERS BY DEPARTMENT
+    # =====================================================
+    @staticmethod
+    def get_users_by_department(department_id):
+
+        db = get_db()
+
+        return db.execute("""
+            SELECT *
+            FROM users
+            WHERE department_id = ?
+        """, (department_id,)).fetchall()
+    
+    # =====================================================
+    # COUNT USERS BY ROLE
+    # =====================================================
+    @staticmethod
+    def count_users_by_role(role):
+
+        db = get_db()
+
+        result = db.execute("""
+            SELECT COUNT(*) as total
+            FROM users
+            WHERE role = ?
+        """, (role,)).fetchone()
+
+        return result['total']

@@ -3,6 +3,7 @@
 {% block page_title %}
 Chi tiết văn bản
 {% endblock %}
+
 {% block sidebar %}
 <li>
     <a href="/admin">
@@ -16,7 +17,7 @@ Chi tiết văn bản
     </a>
 </li>
 
-<li>
+<li class="active">
     <a href="/admin/documents">
         📄 Documents
     </a>
@@ -28,7 +29,7 @@ Chi tiết văn bản
     </a>
 </li>
 
-<li class="active">
+<li>
     <a href="/admin/settings">
         ⚙️ Settings
     </a>
@@ -39,78 +40,119 @@ Chi tiết văn bản
 
 <div class="document-detail-page">
 
-    <!-- ================================= -->
     <!-- HERO -->
-    <!-- ================================= -->
-    <div class="document-hero">
+    <div class="card detail-hero">
 
-        <div class="hero-top">
+        <div class="hero-header">
 
-            <div class="doc-badge">
-                📄 {{ document.document_type }}
+            <div>
+
+                <h1>
+                    {{ document.title }}
+                </h1>
+
+                <div class="hero-meta">
+
+                    <span>
+                        📄 {{ document.document_number or 'N/A' }}
+                    </span>
+
+                    <span>
+                        🏢 {{ document.issuer or 'N/A' }}
+                    </span>
+
+                    <span>
+                        ✍ {{ document.signer or 'N/A' }}
+                    </span>
+
+                    <span>
+                        📅 {{ document.issue_date or 'N/A' }}
+                    </span>
+
+                </div>
+
             </div>
 
-            <a
-                href="/admin/documents"
-                class="btn"
-            >
-                ← Quay lại
-            </a>
+            <div class="hero-actions">
 
-        </div>
+                <a
+                    href="/admin/documents/download/{{ document.id }}"
+                    class="btn btn-success"
+                    target="_blank"
+                >
+                    📥 Download
+                </a>
 
-        <h1>
-            {{ document.title }}
-        </h1>
+                <a
+                    href="/admin/documents/edit/{{ document.id }}"
+                    class="btn"
+                >
+                    ✏ Edit
+                </a>
 
-        <div class="doc-meta">
-
-            <div class="meta-item">
-                📄 {{ document.document_number or 'N/A' }}
-            </div>
-
-            <div class="meta-item">
-                🏢 {{ document.issuer or 'N/A' }}
-            </div>
-
-            <div class="meta-item">
-                📅 {{ document.issue_date or 'N/A' }}
             </div>
 
         </div>
 
     </div>
 
-    <!-- ================================= -->
+    <br>
+
+    <!-- AI -->
+    <div class="admin-grid ai-grid-small">
+
+        <div class="card ai-mini-card">
+            <h4>🧠 AI Summary</h4>
+            <p>
+                {{ document.ai_summary[:120] if document.ai_summary else 'No AI Summary' }}
+            </p>
+        </div>
+
+        <div class="card ai-mini-card">
+            <h4>🏷️ AI Category</h4>
+            <p>
+                {{ document.category }}
+            </p>
+        </div>
+
+        <div class="card ai-mini-card">
+            <h4>⚠️ Priority</h4>
+            <p>
+                {{ document.priority }}
+            </p>
+        </div>
+
+        <div class="card ai-mini-card">
+            <h4>🤖 AI Status</h4>
+            <p>
+
+                {% if document.ai_processed == 1 %}
+                    Processed
+                {% else %}
+                    Pending
+                {% endif %}
+
+            </p>
+        </div>
+
+    </div>
+
+    <br>
+
     <!-- GRID -->
-    <!-- ================================= -->
     <div class="document-grid">
 
-        <!-- ================================= -->
         <!-- LEFT -->
-        <!-- ================================= -->
         <div class="document-left">
 
             <!-- FILE -->
             <div class="card detail-card">
 
-                <div class="section-header">
-
-                    <div class="card-title">
-                        📎 File văn bản
-                    </div>
-
-                    {% if document.original_filename %}
-                    <a
-                        href="/admin/documents/download/{{ document.id }}"
-                        target="_blank"
-                        class="btn btn-success"
-                    >
-                        📥 Tải file
-                    </a>
-                    {% endif %}
-
+                <div class="card-title">
+                    📎 File Preview
                 </div>
+
+                <br>
 
                 {% if document.original_filename %}
 
@@ -130,23 +172,19 @@ Chi tiết văn bản
                         class="preview-image"
                     >
 
-                    {% else %}
-
-                    <div class="summary-box">
-                        Không hỗ trợ preview file này.
-                    </div>
-
                     {% endif %}
 
                 {% endif %}
 
             </div>
 
+            <br>
+
             <!-- OCR -->
             <div class="card detail-card">
 
                 <div class="card-title">
-                    🧠 OCR Text
+                    🧠 OCR TEXT
                 </div>
 
                 <div class="ocr-reader">
@@ -157,9 +195,7 @@ Chi tiết văn bản
 
         </div>
 
-        <!-- ================================= -->
         <!-- RIGHT -->
-        <!-- ================================= -->
         <div class="document-right">
 
             <!-- SUMMARY -->
@@ -170,10 +206,14 @@ Chi tiết văn bản
                 </div>
 
                 <div class="summary-box">
-                    {{ document.ai_summary or 'Chưa có dữ liệu AI summary.' }}
+
+                    {{ document.ai_summary or 'Không có dữ liệu AI' }}
+
                 </div>
 
             </div>
+
+            <br>
 
             <!-- INFO -->
             <div class="card detail-card">
@@ -195,11 +235,6 @@ Chi tiết văn bản
                     </div>
 
                     <div class="info-item">
-                        <span>Độ ưu tiên</span>
-                        <strong>{{ document.priority }}</strong>
-                    </div>
-
-                    <div class="info-item">
                         <span>Keywords</span>
                         <strong>{{ document.keywords }}</strong>
                     </div>
@@ -207,6 +242,11 @@ Chi tiết văn bản
                     <div class="info-item">
                         <span>Ngày tạo</span>
                         <strong>{{ document.created_at }}</strong>
+                    </div>
+
+                    <div class="info-item">
+                        <span>Trạng thái</span>
+                        <strong>{{ document.status }}</strong>
                     </div>
 
                 </div>
@@ -218,5 +258,126 @@ Chi tiết văn bản
     </div>
 
 </div>
+
+<style>
+
+.detail-hero{
+    padding:24px;
+}
+
+.hero-header{
+    display:flex;
+    justify-content:space-between;
+    gap:20px;
+    align-items:flex-start;
+    flex-wrap:wrap;
+}
+
+.hero-header h1{
+    margin-bottom:12px;
+    line-height:1.5;
+}
+
+.hero-meta{
+    display:flex;
+    gap:16px;
+    flex-wrap:wrap;
+    color:#666;
+    font-size:14px;
+}
+
+.hero-actions{
+    display:flex;
+    gap:10px;
+}
+
+.document-grid{
+    display:grid;
+    grid-template-columns:2fr 1fr;
+    gap:20px;
+}
+
+.ai-grid-small{
+    grid-template-columns:repeat(4,1fr);
+    gap:16px;
+}
+
+.ai-mini-card{
+    padding:18px;
+}
+
+.detail-card{
+    padding:20px;
+}
+
+.card-title{
+    font-size:18px;
+    font-weight:700;
+    margin-bottom:10px;
+}
+
+.pdf-frame{
+    width:100%;
+    height:700px;
+    border:none;
+    border-radius:10px;
+}
+
+.preview-image{
+    width:100%;
+    border-radius:10px;
+}
+
+.ocr-reader{
+    max-height:600px;
+    overflow:auto;
+    white-space:pre-wrap;
+    line-height:1.7;
+    font-size:14px;
+}
+
+.summary-box{
+    line-height:1.8;
+    color:#444;
+}
+
+.info-list{
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+}
+
+.info-item{
+    display:flex;
+    justify-content:space-between;
+    padding-bottom:10px;
+    border-bottom:1px solid #eee;
+}
+
+@media(max-width:1200px){
+
+    .document-grid{
+        grid-template-columns:1fr;
+    }
+
+    .ai-grid-small{
+        grid-template-columns:repeat(2,1fr);
+    }
+
+}
+
+@media(max-width:768px){
+
+    .ai-grid-small{
+        grid-template-columns:1fr;
+    }
+
+    .hero-header{
+        flex-direction:column;
+    }
+
+}
+
+</style>
 
 {% endblock %}

@@ -1,11 +1,11 @@
 <!-- =========================================
-FILE: app/templates/staff/processing_documents.html
+FILE: app/templates/staff/approved_documents.html
 ========================================= -->
 
 {% extends "layouts/dashboard_layout.html" %}
 
 {% block page_title %}
-Văn bản đang xử lý
+Văn bản hoàn thành
 {% endblock %}
 
 {% block sidebar %}
@@ -22,13 +22,13 @@ Văn bản đang xử lý
     </a>
 </li>
 
-<li class="active">
+<li>
     <a href="/staff/processing-documents">
         ⚙️ Đang xử lý
     </a>
 </li>
 
-<li>
+<li class="active">
     <a href="/staff/approved-documents">
         ✅ Hoàn thành
     </a>
@@ -48,10 +48,10 @@ Văn bản đang xử lý
 
     <div>
 
-        <h2>⚙️ Văn bản đang xử lý</h2>
+        <h2>✅ Văn bản hoàn thành</h2>
 
         <p class="text-muted">
-            Theo dõi tiến độ công việc
+            Danh sách văn bản đã xử lý xong
         </p>
 
     </div>
@@ -68,8 +68,8 @@ Văn bản đang xử lý
 
                 <th>ID</th>
                 <th>Tiêu đề</th>
-                <th>Ưu tiên</th>
-                <th>Tiến độ</th>
+                <th>Loại</th>
+                <th>Hoàn thành</th>
                 <th>Trạng thái</th>
                 <th>Thao tác</th>
 
@@ -87,30 +87,13 @@ Văn bản đang xử lý
 
                 <td>{{ doc.title }}</td>
 
-                <td>
+                <td>{{ doc.document_type }}</td>
 
-                    <span class="badge badge-warning">
-                        {{ doc.priority }}
-                    </span>
-
-                </td>
+                <td>{{ doc.updated_at }}</td>
 
                 <td>
 
-                    <div class="progress-bar">
-
-                        <div
-                            class="progress-value"
-                            style="width:70%;"
-                        ></div>
-
-                    </div>
-
-                </td>
-
-                <td>
-
-                    <span class="status status-processing">
+                    <span class="status status-approved">
                         {{ doc.status }}
                     </span>
 
@@ -128,27 +111,8 @@ Văn bản đang xử lý
                     <button
                         class="btn btn-primary btn-sm"
                     >
-                        📝 Cập nhật
+                        📄 Xuất báo cáo
                     </button>
-
-                    <form
-                        method="POST"
-                        action="/staff/update-status/{{ doc.id }}"
-                    >
-
-                        <input
-                            type="hidden"
-                            name="status"
-                            value="approved"
-                        >
-
-                        <button
-                            class="btn btn-success btn-sm"
-                        >
-                            ✅ Hoàn thành
-                        </button>
-
-                    </form>
 
                 </td>
 

@@ -28,6 +28,18 @@ Văn bản được giao
     </a>
 </li>
 
+<li>
+    <a href="/staff/approved-documents">
+        ✅ Hoàn thành
+    </a>
+</li>
+
+<li>
+    <a href="/staff/notifications">
+        🔔 Thông báo
+    </a>
+</li>
+
 {% endblock %}
 
 {% block dashboard_content %}
@@ -36,10 +48,10 @@ Văn bản được giao
 
     <div>
 
-        <h2>Danh sách văn bản được giao</h2>
+        <h2>📥 Văn bản được giao</h2>
 
         <p class="text-muted">
-            Theo dõi và tiếp nhận văn bản xử lý
+            Quản lý danh sách công việc được giao
         </p>
 
     </div>
@@ -48,27 +60,19 @@ Văn bản được giao
 
 <div class="filter-bar">
 
-    <input type="text"
-           id="documentSearch"
-           placeholder="🔍 Tìm kiếm văn bản">
+    <input
+        type="text"
+        id="documentSearch"
+        placeholder="🔍 Tìm kiếm văn bản..."
+        class="search-input"
+    >
 
-    <select>
+    <select class="select-filter">
 
-        <option value="">
-            Tất cả loại
-        </option>
-
-        <option value="incoming">
-            Incoming
-        </option>
-
-        <option value="outgoing">
-            Outgoing
-        </option>
-
-        <option value="internal">
-            Internal
-        </option>
+        <option>Tất cả</option>
+        <option>pending</option>
+        <option>processing</option>
+        <option>approved</option>
 
     </select>
 
@@ -81,92 +85,92 @@ Văn bản được giao
         <thead>
 
             <tr>
+
                 <th>ID</th>
                 <th>Tiêu đề</th>
-                <th>Người tạo</th>
+                <th>Loại</th>
                 <th>Ưu tiên</th>
-                <th>Ngày giao</th>
                 <th>Trạng thái</th>
+                <th>Ngày tạo</th>
                 <th>Thao tác</th>
+
             </tr>
 
         </thead>
 
         <tbody>
 
-            {% if documents %}
+            {% for doc in documents %}
 
-                {% for doc in documents %}
+            <tr>
 
-                <tr>
+                <td>#{{ doc.id }}</td>
 
-                    <td>#{{ doc.id }}</td>
+                <td>{{ doc.title }}</td>
 
-                    <td>{{ doc.title }}</td>
+                <td>{{ doc.document_type }}</td>
 
-                    <td>
-                        {{ doc.creator_name or '---' }}
-                    </td>
+                <td>
 
-                    <td>
-                        {{ doc.priority or 'normal' }}
-                    </td>
+                    <span class="badge badge-warning">
+                        {{ doc.priority }}
+                    </span>
 
-                    <td>
-                        {{ doc.created_at }}
-                    </td>
+                </td>
 
-                    <td>
+                <td>
 
-                        <span class="
-                            status
-                            status-{{ doc.status }}
-                        ">
-                            {{ doc.status }}
-                        </span>
+                    <span class="status status-{{ doc.status }}">
+                        {{ doc.status }}
+                    </span>
 
-                    </td>
+                </td>
 
-                    <td class="action-buttons">
+                <td>{{ doc.created_at }}</td>
 
-                        <a href="/documents/{{ doc.id }}"
-                           class="btn btn-success btn-sm">
-                            View
-                        </a>
+                <td class="action-group">
 
-                        <form method="POST"
-                              action="/documents/update-status/{{ doc.id }}">
+                    <a
+                        href="/staff/document/{{ doc.id }}"
+                        class="btn btn-success btn-sm"
+                    >
+                        View
+                    </a>
 
-                            <input type="hidden"
-                                   name="status"
-                                   value="processing">
+                    <button
+                        class="btn btn-primary btn-sm"
+                    >
+                        💬 Comment
+                    </button>
 
-                            <button class="btn btn-warning btn-sm">
-                                Nhận xử lý
-                            </button>
+                    {% if doc.status == 'pending' %}
 
-                        </form>
+                    <form
+                        method="POST"
+                        action="/staff/update-status/{{ doc.id }}"
+                    >
 
-                    </td>
+                        <input
+                            type="hidden"
+                            name="status"
+                            value="processing"
+                        >
 
-                </tr>
+                        <button
+                            class="btn btn-warning btn-sm"
+                        >
+                            Nhận xử lý
+                        </button>
 
-                {% endfor %}
+                    </form>
 
-            {% else %}
+                    {% endif %}
 
-                <tr>
+                </td>
 
-                    <td colspan="7"
-                        class="text-center">
+            </tr>
 
-                        Không có văn bản nào
-
-                    </td>
-
-                </tr>
-
-            {% endif %}
+            {% endfor %}
 
         </tbody>
 
@@ -174,8 +178,4 @@ Văn bản được giao
 
 </div>
 
-{% endblock %}
-
-{% block extra_js %}
-<script src="{{ url_for('static', filename='js/document.js') }}"></script>
 {% endblock %}

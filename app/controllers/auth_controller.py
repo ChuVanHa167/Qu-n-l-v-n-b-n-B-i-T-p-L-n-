@@ -103,9 +103,13 @@ def login():
 
                 return redirect('/staff')
 
-            else:
+            elif user['role'] == 'employee':
 
                 return redirect('/employee')
+
+            else:
+
+                return redirect('/')
 
     return render_template(
         'auth/login.html',

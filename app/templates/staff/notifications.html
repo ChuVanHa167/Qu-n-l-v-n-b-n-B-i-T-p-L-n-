@@ -1,0 +1,126 @@
+<!-- =========================================
+FILE: app/templates/staff/notifications.html
+========================================= -->
+
+{% extends "layouts/dashboard_layout.html" %}
+
+{% block page_title %}
+Thông báo
+{% endblock %}
+
+{% block sidebar %}
+
+<li>
+    <a href="/staff">
+        📊 Dashboard
+    </a>
+</li>
+
+<li>
+    <a href="/staff/assigned-documents">
+        📥 Văn bản được giao
+    </a>
+</li>
+
+<li>
+    <a href="/staff/processing-documents">
+        ⚙️ Đang xử lý
+    </a>
+</li>
+
+<li>
+    <a href="/staff/approved-documents">
+        ✅ Hoàn thành
+    </a>
+</li>
+
+<li class="active">
+    <a href="/staff/notifications">
+        🔔 Thông báo
+    </a>
+</li>
+
+{% endblock %}
+
+{% block dashboard_content %}
+
+<div class="page-header">
+
+    <div>
+
+        <h2>
+            🔔 Thông báo hệ thống
+        </h2>
+
+        <p class="text-muted">
+
+            Có {{ unread_count }} thông báo chưa đọc
+
+        </p>
+
+    </div>
+
+</div>
+
+<br>
+
+<div class="card">
+
+    {% if notifications %}
+
+        <ul class="notification-list">
+
+            {% for item in notifications %}
+
+            <li class="
+                notification-item
+
+                {% if item.is_read == 0 %}
+                    unread
+                {% endif %}
+            ">
+
+                <div>
+
+                    <h4>
+                        {{ item.title }}
+                    </h4>
+
+                    <p>
+                        {{ item.message }}
+                    </p>
+
+                    <small>
+                        {{ item.created_at }}
+                    </small>
+
+                </div>
+
+                {% if item.is_read == 0 %}
+
+                <a
+                    href="/staff/read-notification/{{ item.id }}"
+                    class="btn btn-primary"
+                >
+                    Đánh dấu đã đọc
+                </a>
+
+                {% endif %}
+
+            </li>
+
+            {% endfor %}
+
+        </ul>
+
+    {% else %}
+
+        <p>
+            Không có thông báo nào
+        </p>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

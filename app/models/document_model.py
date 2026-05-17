@@ -34,6 +34,7 @@ class DocumentModel:
             ON documents.assigned_to = assignee.id
 
             WHERE documents.id = ?
+            AND documents.is_deleted = 0
         """, (document_id,)).fetchone()
 
     @staticmethod
@@ -156,6 +157,7 @@ class DocumentModel:
             SELECT *
             FROM documents
             WHERE status = ?
+            AND is_deleted = 0
             ORDER BY created_at DESC
         """, (status,)).fetchall()
 
@@ -186,9 +188,133 @@ class DocumentModel:
         return db.execute("""
             SELECT *
             FROM documents
+            WHERE is_deleted = 0
             ORDER BY created_at DESC
             LIMIT ?
         """, (limit,)).fetchall()
+
+
+    # =====================================================
+    # GET ALL DOCUMENTS
+    # =====================================================
+    @staticmethod
+    def get_all_documents():
+
+        db = get_db()
+
+        return db.execute("""
+            SELECT
+                documents.*,
+                users.username as creator_name
+            FROM documents
+
+            LEFT JOIN users
+            ON documents.created_by = users.id
+
+            WHERE documents.is_deleted = 0
+
+            ORDER BY documents.created_at DESC
+        """).fetchall()
+
+
+    # =====================================================
+    # GET DOCUMENT BY ID
+    # =====================================================
+    @staticmethod
+    def get_document_by_id(document_id):
+
+        db = get_db()
+
+        return db.execute("""
+            SELECT *
+            FROM documents
+            WHERE id = ?
+            AND is_deleted = 0
+        """, (document_id,)).fetchone()
+
+
+    # =====================================================
+    # GET DOCUMENTS BY CREATOR
+    # =====================================================
+    @staticmethod
+    def get_documents_by_creator(user_id):
+
+        db = get_db()
+
+        return db.execute("""
+            SELECT *
+            FROM documents
+            WHERE created_by = ?
+            AND is_deleted = 0
+            ORDER BY created_at DESC
+        """, (user_id,)).fetchall()
+
+
+    # =====================================================
+    # GET ASSIGNED DOCUMENTS
+    # =====================================================
+    @staticmethod
+    def get_assigned_documents(user_id):
+
+        db = get_db()
+
+        return db.execute("""
+            SELECT *
+            FROM documents
+            WHERE assigned_to = ?
+            AND is_deleted = 0
+            ORDER BY created_at DESC
+        """, (user_id,)).fetchall()
+
+
+    # =====================================================
+    # SEARCH DOCUMENTS
+    # =====================================================
+    @staticmethod
+    def search_documents(keyword):
+
+        db = get_db()
+
+        return db.execute("""
+            SELECT *
+            FROM documents
+            WHERE is_deleted = 0
+            AND (
+                title LIKE ?
+                OR content LIKE ?
+                OR ai_summary LIKE ?
+            )
+        """, (
+            f'%{keyword}%',
+            f'%{keyword}%',
+            f'%{keyword}%'
+        )).fetchall()
+
+
+    # =====================================================
+    # GET STAFF PENDING DOCUMENTS
+    # =====================================================
+    @staticmethod
+    def get_staff_pending_documents(user_id):
+
+        db = get_db()
+
+        return db.execute("""
+            SELECT
+                documents.*,
+                users.username as creator_name
+            FROM documents
+
+            LEFT JOIN users
+            ON documents.created_by = users.id
+
+            WHERE
+                documents.assigned_to = ?
+                AND documents.status = 'pending'
+                AND documents.is_deleted = 0
+
+            ORDER BY documents.created_at DESC
+        """, (user_id,)).fetchall()
 
     # =====================================================
     # CREATE DOCUMENT
@@ -312,91 +438,6 @@ class DocumentModel:
         db.commit()
 
     # =====================================================
-    # GET ALL DOCUMENTS
-    # =====================================================
-    @staticmethod
-    def get_all_documents():
-
-        db = get_db()
-
-        return db.execute("""
-            SELECT
-                documents.*,
-                users.username as creator_name
-            FROM documents
-
-            LEFT JOIN users
-            ON documents.created_by = users.id
-
-            ORDER BY documents.created_at DESC
-        """).fetchall()
-
-    # =====================================================
-    # GET DOCUMENT BY ID
-    # =====================================================
-    @staticmethod
-    def get_document_by_id(document_id):
-
-        db = get_db()
-
-        return db.execute("""
-            SELECT *
-            FROM documents
-            WHERE id = ?
-        """, (document_id,)).fetchone()
-
-    # =====================================================
-    # GET DOCUMENTS BY CREATOR
-    # =====================================================
-    @staticmethod
-    def get_documents_by_creator(user_id):
-
-        db = get_db()
-
-        return db.execute("""
-            SELECT *
-            FROM documents
-            WHERE created_by = ?
-            ORDER BY created_at DESC
-        """, (user_id,)).fetchall()
-
-    # =====================================================
-    # GET ASSIGNED DOCUMENTS
-    # =====================================================
-    @staticmethod
-    def get_assigned_documents(user_id):
-
-        db = get_db()
-
-        return db.execute("""
-            SELECT *
-            FROM documents
-            WHERE assigned_to = ?
-            ORDER BY created_at DESC
-        """, (user_id,)).fetchall()
-
-    # =====================================================
-    # SEARCH DOCUMENTS
-    # =====================================================
-    @staticmethod
-    def search_documents(keyword):
-
-        db = get_db()
-
-        return db.execute("""
-            SELECT *
-            FROM documents
-            WHERE
-                title LIKE ?
-                OR content LIKE ?
-                OR ai_summary LIKE ?
-        """, (
-            f'%{keyword}%',
-            f'%{keyword}%',
-            f'%{keyword}%'
-        )).fetchall()
-
-    # =====================================================
     # UPDATE STATUS
     # =====================================================
     @staticmethod
@@ -473,14 +514,24 @@ class DocumentModel:
     # DELETE DOCUMENT
     # =====================================================
     @staticmethod
-    def delete_document(document_id):
+    def delete_document(
+        document_id,
+        deleted_by
+    ):
 
         db = get_db()
 
         db.execute("""
-            DELETE FROM documents
+            UPDATE documents
+            SET
+                is_deleted = 1,
+                deleted_at = CURRENT_TIMESTAMP,
+                deleted_by = ?
             WHERE id = ?
-        """, (document_id,))
+        """, (
+            deleted_by,
+            document_id
+        ))
 
         db.commit()
 
@@ -495,6 +546,7 @@ class DocumentModel:
         result = db.execute("""
             SELECT COUNT(*) as total
             FROM documents
+            WHERE is_deleted = 0
         """).fetchone()
 
         return result['total']
@@ -511,6 +563,7 @@ class DocumentModel:
             SELECT COUNT(*) as total
             FROM documents
             WHERE status = ?
+            AND is_deleted = 0
         """, (status,)).fetchone()
 
         return result['total']
@@ -530,7 +583,7 @@ class DocumentModel:
         query = """
             SELECT *
             FROM documents
-            WHERE 1=1
+            WHERE is_deleted = 0
         """
 
         params = []
@@ -586,7 +639,11 @@ class DocumentModel:
     ):
 
         db = get_db()
-
+        # lưu version cũ
+        DocumentModel.save_document_version(
+            document_id,
+            updated_by=1
+        )
         db.execute("""
             UPDATE documents
             SET
@@ -595,6 +652,7 @@ class DocumentModel:
                 document_type = ?,
                 category = ?,
                 priority = ?,
+                version = version + 1,
                 updated_at = CURRENT_TIMESTAMP
             WHERE id = ?
         """, (
@@ -639,3 +697,221 @@ class DocumentModel:
         ))
 
         db.commit()
+
+    # =====================================================
+    # GET STAFF PROCESSING DOCUMENTS
+    # =====================================================
+    @staticmethod
+    def get_staff_processing_documents(user_id):
+
+        db = get_db()
+
+        return db.execute("""
+            SELECT
+                documents.*,
+                users.username as creator_name
+            FROM documents
+
+            LEFT JOIN users
+            ON documents.created_by = users.id
+
+            WHERE
+                documents.assigned_to = ?
+                AND documents.status = 'processing'
+                AND documents.is_deleted = 0
+            ORDER BY documents.updated_at DESC
+        """, (user_id,)).fetchall()
+
+    # =====================================================
+    # GET STAFF APPROVED DOCUMENTS
+    # =====================================================
+    @staticmethod
+    def get_staff_approved_documents(user_id):
+
+        db = get_db()
+
+        return db.execute("""
+            SELECT
+                documents.*,
+                users.username as creator_name
+            FROM documents
+
+            LEFT JOIN users
+            ON documents.created_by = users.id
+
+            WHERE
+                documents.assigned_to = ?
+                AND documents.status = 'approved'
+                AND documents.is_deleted = 0
+            ORDER BY documents.updated_at DESC
+        """, (user_id,)).fetchall()
+
+    # =====================================================
+    # STAFF TAKE DOCUMENT
+    # =====================================================
+    @staticmethod
+    def staff_take_document(
+        document_id,
+        staff_id
+    ):
+
+        db = get_db()
+
+        db.execute("""
+            UPDATE documents
+            SET
+                assigned_to = ?,
+                status = 'processing',
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = ?
+        """, (
+            staff_id,
+            document_id
+        ))
+
+        db.commit()
+
+    # =====================================================
+    # STAFF COMPLETE DOCUMENT
+    # =====================================================
+    @staticmethod
+    def staff_complete_document(document_id):
+
+        db = get_db()
+
+        db.execute("""
+            UPDATE documents
+            SET
+                status = 'approved',
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = ?
+        """, (document_id,))
+
+        db.commit()
+
+    # =====================================================
+    # RESTORE DOCUMENT
+    # =====================================================
+    @staticmethod
+    def restore_document(document_id):
+
+        db = get_db()
+
+        db.execute("""
+            UPDATE documents
+            SET
+                is_deleted = 0,
+                deleted_at = NULL,
+                deleted_by = NULL
+            WHERE id = ?
+        """, (document_id,))
+
+        db.commit()
+
+    # =====================================================
+    # GET RECYCLE BIN
+    # =====================================================
+    @staticmethod
+    def get_deleted_documents():
+
+        db = get_db()
+
+        return db.execute("""
+            SELECT *
+            FROM documents
+            WHERE is_deleted = 1
+            ORDER BY deleted_at DESC
+        """).fetchall()
+    
+    # =====================================================
+    # SAVE VERSION
+    # =====================================================
+    @staticmethod
+    def save_document_version(
+        document_id,
+        updated_by
+    ):
+
+        db = get_db()
+
+        document = db.execute("""
+            SELECT *
+            FROM documents
+            WHERE id = ?
+        """, (document_id,)).fetchone()
+
+        if not document:
+            return
+
+        db.execute("""
+            INSERT INTO document_versions (
+
+                document_id,
+                version_number,
+
+                title,
+                content,
+                document_type,
+                category,
+                priority,
+
+                updated_by
+
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+
+            document['id'],
+            document['version'],
+
+            document['title'],
+            document['content'],
+            document['document_type'],
+            document['category'],
+            document['priority'],
+
+            updated_by
+        ))
+
+        db.commit()
+
+    # =====================================================
+    # GET VERSION HISTORY
+    # =====================================================
+    @staticmethod
+    def get_document_versions(document_id):
+
+        db = get_db()
+
+        return db.execute("""
+            SELECT
+                document_versions.*,
+                users.username
+            FROM document_versions
+
+            LEFT JOIN users
+            ON document_versions.updated_by = users.id
+
+            WHERE document_id = ?
+
+            ORDER BY version_number DESC
+        """, (document_id,)).fetchall()
+    
+    # =====================================================
+    # GET OVERDUE DOCUMENTS
+    # =====================================================
+    @staticmethod
+    def get_overdue_documents():
+
+        db = get_db()
+
+        return db.execute("""
+            SELECT *
+            FROM documents
+
+            WHERE
+                deadline IS NOT NULL
+                AND deadline < DATE('now')
+                AND status != 'approved'
+                AND is_deleted = 0
+        """).fetchall()

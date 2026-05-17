@@ -28,6 +28,18 @@ Staff Dashboard
     </a>
 </li>
 
+<li>
+    <a href="/staff/approved-documents">
+        ✅ Hoàn thành
+    </a>
+</li>
+
+<li>
+    <a href="/staff/notifications">
+        🔔 Thông báo
+    </a>
+</li>
+
 {% endblock %}
 
 {% block dashboard_content %}
@@ -36,85 +48,254 @@ Staff Dashboard
 
     <div>
 
-        <h2>Xin chào {{ session.username }}</h2>
+        <h2>
+            👋 Xin chào {{ session.username }}
+        </h2>
 
         <p class="text-muted">
-            Theo dõi tiến độ xử lý công việc hôm nay
+            Theo dõi tiến độ xử lý công việc
         </p>
+
+    </div>
+
+    <div class="header-actions">
+
+        <a
+            href="/staff/assigned-documents"
+            class="btn"
+        >
+            📥 Xem công việc
+        </a>
 
     </div>
 
 </div>
 
 {% if processing_documents > 0 %}
-<div class="alert">
-    ⚠️ Có {{ processing_documents }} văn bản cần xử lý
+
+<div class="alert alert-warning">
+
+    ⚠️ Hiện có
+    <strong>{{ processing_documents }}</strong>
+    văn bản đang xử lý
+
 </div>
+
 {% endif %}
 
-<div class="cards">
+<div class="admin-grid">
 
-    <div class="stats-card">
+    <div class="card dashboard-card">
 
-        <p>Được giao</p>
+        <div class="card-icon blue">
+            📥
+        </div>
 
-        <h2>{{ assigned_documents }}</h2>
+        <div>
 
-    </div>
+            <h3>Được giao</h3>
 
-    <div class="stats-card">
+            <h1>
+                {{ assigned_documents }}
+            </h1>
 
-        <p>Đang xử lý</p>
+            <p>
+                Văn bản chờ xử lý
+            </p>
 
-        <h2>{{ processing_documents }}</h2>
-
-    </div>
-
-    <div class="stats-card">
-
-        <p>Hoàn thành</p>
-
-        <h2>{{ completed_documents }}</h2>
+        </div>
 
     </div>
 
-    <div class="stats-card">
+    <div class="card dashboard-card">
 
-        <p>Quá hạn</p>
+        <div class="card-icon orange">
+            ⚙️
+        </div>
 
-        <h2>{{ overdue_documents }}</h2>
+        <div>
+
+            <h3>Đang xử lý</h3>
+
+            <h1>
+                {{ processing_documents }}
+            </h1>
+
+            <p>
+                Công việc đang thực hiện
+            </p>
+
+        </div>
+
+    </div>
+
+    <div class="card dashboard-card">
+
+        <div class="card-icon green">
+            ✅
+        </div>
+
+        <div>
+
+            <h3>Hoàn thành</h3>
+
+            <h1>
+                {{ completed_documents }}
+            </h1>
+
+            <p>
+                Văn bản hoàn tất
+            </p>
+
+        </div>
+
+    </div>
+
+    <div class="card dashboard-card">
+
+        <div class="card-icon red">
+            🚨
+        </div>
+
+        <div>
+
+            <h3>Ưu tiên cao</h3>
+
+            <h1>
+                {{ overdue_documents }}
+            </h1>
+
+            <p>
+                Văn bản urgent
+            </p>
+
+        </div>
 
     </div>
 
 </div>
 
-<div class="chart-box">
+<br>
 
-    <h3>📊 Hiệu suất xử lý</h3>
+<div class="quick-actions">
 
-    <div class="fake-chart"></div>
+    <a
+        href="/staff/assigned-documents"
+        class="btn"
+    >
+        📥 Văn bản được giao
+    </a>
+
+    <a
+        href="/staff/processing-documents"
+        class="btn btn-warning"
+    >
+        ⚙️ Đang xử lý
+    </a>
+
+    <a
+        href="/staff/approved-documents"
+        class="btn btn-success"
+    >
+        ✅ Hoàn thành
+    </a>
+
+    <a
+        href="/staff/notifications"
+        class="btn btn-primary"
+    >
+        🔔 Thông báo
+    </a>
 
 </div>
 
-<div class="card mt-20">
+<br>
 
-    <h3>🕒 Công việc gần đây</h3>
+<div class="card">
 
-    <ul class="timeline">
+    <div class="table-header">
 
-        <li>
-            Tiếp nhận công văn mới
-        </li>
+        <h3>
+            📄 Văn bản gần đây
+        </h3>
 
-        <li>
-            Cập nhật trạng thái xử lý
-        </li>
+        <input
+            type="text"
+            id="documentSearch"
+            placeholder="🔍 Tìm nhanh..."
+            class="search-input"
+        >
 
-        <li>
-            Hoàn thành văn bản nội bộ
-        </li>
+    </div>
 
-    </ul>
+    <table class="table">
+
+        <thead>
+
+            <tr>
+
+                <th>ID</th>
+
+                <th>Tiêu đề</th>
+
+                <th>Trạng thái</th>
+
+                <th>Ưu tiên</th>
+
+                <th>Thao tác</th>
+
+            </tr>
+
+        </thead>
+
+        <tbody>
+
+            {% for doc in recent_documents %}
+
+            <tr>
+
+                <td>
+                    #{{ doc.id }}
+                </td>
+
+                <td>
+                    {{ doc.title }}
+                </td>
+
+                <td>
+
+                    <span class="status status-{{ doc.status }}">
+                        {{ doc.status }}
+                    </span>
+
+                </td>
+
+                <td>
+
+                    <span class="badge badge-warning">
+                        {{ doc.priority }}
+                    </span>
+
+                </td>
+
+                <td>
+
+                    <a
+                        href="/staff/document/{{ doc.id }}"
+                        class="btn btn-success btn-sm"
+                    >
+                        View
+                    </a>
+
+                </td>
+
+            </tr>
+
+            {% endfor %}
+
+        </tbody>
+
+    </table>
 
 </div>
 

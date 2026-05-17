@@ -27,6 +27,8 @@ from werkzeug.utils import secure_filename
 
 from flask import current_app
 from flask import jsonify
+from functools import wraps
+from flask import abort
 
 admin_bp = Blueprint(
     'admin',
@@ -56,17 +58,39 @@ def allowed_file(filename):
 
 
 # =========================================================
-# CHECK ADMIN
+# ROLE CHECK
+# =========================================================
+def roles_required(*roles):
+
+    def decorator(f):
+
+        @wraps(f)
+        def wrapper(*args, **kwargs):
+
+            if 'user_id' not in session:
+                return redirect('/')
+
+            user_role = session.get('role')
+
+            if user_role not in roles:
+                abort(403)
+
+            return f(*args, **kwargs)
+
+        return wrapper
+
+    return decorator
+
+
+# =========================================================
+# ADMIN CHECK
 # =========================================================
 def check_admin():
 
     if 'user_id' not in session:
         return False
 
-    if session.get('role') != 'admin':
-        return False
-
-    return True
+    return session.get('role') == 'admin'
 
 
 # =========================================================
@@ -74,6 +98,7 @@ def check_admin():
 # =========================================================
 @admin_bp.route('/admin')
 @admin_bp.route('/admin/index')
+@roles_required('admin', 'manager')
 def dashboard():
 
     if not check_admin():
@@ -99,6 +124,10 @@ def dashboard():
         'rejected'
     )
 
+    overdue_documents = (
+        DocumentModel.get_overdue_documents()
+    )
+
     recent_documents = DocumentModel.get_recent_documents()
 
     recent_logs = AuditService.get_recent_logs()
@@ -121,7 +150,7 @@ def dashboard():
         processing_documents=processing_documents,
         approved_documents=approved_documents,
         rejected_documents=rejected_documents,
-
+        overdue_documents=overdue_documents,
         recent_documents=recent_documents,
         recent_logs=recent_logs,
         notifications=notifications,
@@ -133,6 +162,7 @@ def dashboard():
 # USERS PAGE
 # =========================================================
 @admin_bp.route('/admin/users')
+@roles_required('admin')
 def users_page():
 
     if not check_admin():
@@ -154,6 +184,7 @@ def users_page():
     '/admin/users/create',
     methods=['POST']
 )
+@roles_required('admin')
 def create_user():
 
     try:
@@ -223,6 +254,7 @@ def create_user():
     '/admin/users/update-role/<int:user_id>',
     methods=['POST']
 )
+@roles_required('admin')
 def update_user_role(user_id):
 
     if not check_admin():
@@ -252,6 +284,7 @@ def update_user_role(user_id):
 @admin_bp.route(
     '/admin/users/update-status/<int:user_id>'
 )
+@roles_required('admin')
 def update_user_status(user_id):
 
     if not check_admin():
@@ -282,6 +315,7 @@ def update_user_status(user_id):
 # DELETE USER
 # =========================================================
 @admin_bp.route('/admin/users/delete/<int:user_id>')
+@roles_required('admin')
 def delete_user(user_id):
 
     if not check_admin():
@@ -327,6 +361,7 @@ def delete_user(user_id):
 # DOCUMENT PAGE
 # =========================================================
 @admin_bp.route('/admin/documents')
+@roles_required('admin', 'manager')
 def documents_page():
 
     if not check_admin():
@@ -350,6 +385,7 @@ def documents_page():
     '/admin/documents/create',
     methods=['POST']
 )
+@roles_required('admin', 'manager')
 def create_document():
 
     if not check_admin():
@@ -450,13 +486,15 @@ def create_document():
 @admin_bp.route(
     '/admin/documents/delete/<int:document_id>'
 )
+@roles_required('admin')
 def delete_document(document_id):
 
     if not check_admin():
         return redirect('/')
 
     DocumentModel.delete_document(
-        document_id
+        document_id,
+        session['user_id']
     )
 
     AuditService.write_log(
@@ -479,6 +517,7 @@ def delete_document(document_id):
     '/admin/documents/assign/<int:document_id>',
     methods=['POST']
 )
+@roles_required('admin', 'manager')
 def assign_document(document_id):
 
     if not check_admin():
@@ -605,6 +644,7 @@ def update_settings():
 # SEARCH USERS
 # =========================================================
 @admin_bp.route('/admin/users/search')
+@roles_required('admin')
 def search_users():
 
     if not check_admin():
@@ -626,6 +666,8 @@ def search_users():
 # LOAD USER EDIT
 # =========================================================
 @admin_bp.route('/admin/users/edit/<int:user_id>')
+
+@roles_required('admin')
 def load_edit_user(user_id):
 
     if not check_admin():
@@ -804,6 +846,7 @@ def load_edit_document(document_id):
     '/admin/documents/update/<int:document_id>',
     methods=['POST']
 )
+@roles_required('admin', 'manager')
 def update_document(document_id):
 
     if not check_admin():
@@ -853,6 +896,7 @@ def update_document(document_id):
 @admin_bp.route(
     '/admin/documents/process-ai/<int:document_id>'
 )
+@roles_required('admin', 'manager')
 def process_ai_document(document_id):
 
     if not check_admin():
@@ -912,6 +956,7 @@ def process_ai_document(document_id):
     '/admin/documents/ai-extract',
     methods=['POST']
 )
+@roles_required('admin', 'manager')
 def ai_extract_document():
 
     if not check_admin():
@@ -1022,6 +1067,7 @@ def filter_audit_logs():
 @admin_bp.route(
     '/admin/documents/approve/<int:document_id>'
 )
+@roles_required('admin')
 def approve_document(document_id):
 
     if not check_admin():
@@ -1060,6 +1106,7 @@ def approve_document(document_id):
     '/admin/documents/reject/<int:document_id>',
     methods=['POST']
 )
+@roles_required('admin', 'manager')
 def reject_document(document_id):
 
     if not check_admin():
@@ -1167,3 +1214,72 @@ def mark_notification_read(notification_id):
     )
 
     return redirect('/notifications')
+
+# =========================================================
+# 403 ERROR
+# =========================================================
+@admin_bp.app_errorhandler(403)
+def forbidden(e):
+
+    return render_template(
+        'errors/403.html'
+    ), 403
+
+# =========================================================
+# RECYCLE BIN
+# =========================================================
+@admin_bp.route('/admin/recycle-bin')
+@roles_required('admin')
+def recycle_bin():
+
+    documents = DocumentModel.get_deleted_documents()
+
+    return render_template(
+        'admin/recycle_bin.html',
+        documents=documents
+    )
+
+# =========================================================
+# RESTORE DOCUMENT
+# =========================================================
+@admin_bp.route(
+    '/admin/documents/restore/<int:document_id>'
+)
+@roles_required('admin')
+def restore_document(document_id):
+
+    DocumentModel.restore_document(
+        document_id
+    )
+
+    flash('Khôi phục thành công')
+
+    return redirect('/admin/recycle-bin')
+
+# =========================================================
+# VERSION HISTORY
+# =========================================================
+@admin_bp.route(
+    '/admin/documents/versions/<int:document_id>'
+)
+@roles_required('admin', 'manager')
+def document_versions(document_id):
+
+    versions = (
+        DocumentModel.get_document_versions(
+            document_id
+        )
+    )
+
+    document = (
+        DocumentModel.get_document_by_id(
+            document_id
+        )
+    )
+
+    return render_template(
+        'admin/document_versions.html',
+
+        versions=versions,
+        document=document
+    )

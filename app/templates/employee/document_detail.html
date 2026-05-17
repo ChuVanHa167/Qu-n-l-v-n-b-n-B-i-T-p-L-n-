@@ -1,0 +1,86 @@
+{% extends "layouts/dashboard_layout.html" %}
+
+{% block page_title %}
+Chi tiết văn bản
+{% endblock %}
+
+{% block dashboard_content %}
+
+<div class="card">
+
+    <h2>{{ document.title }}</h2>
+
+    <br>
+
+    <p>
+        <b>Loại:</b>
+        {{ document.document_type }}
+    </p>
+
+    <p>
+        <b>Trạng thái:</b>
+        {{ document.status }}
+    </p>
+
+    <p>
+        <b>Người xử lý:</b>
+        {{ document.assignee_name }}
+    </p>
+
+    <br>
+
+    <textarea
+        rows="10"
+        readonly
+    >{{ document.content }}</textarea>
+
+</div>
+
+<br>
+
+<div class="card">
+
+    <h3>💬 Bình luận</h3>
+
+    {% for comment in comments %}
+
+    <div class="timeline">
+
+        <li>
+
+            <b>{{ comment.username }}</b>
+
+            <br>
+
+            {{ comment.comment }}
+
+        </li>
+
+    </div>
+
+    {% endfor %}
+
+    <br>
+
+    <form
+        method="POST"
+        action="/employee/document/comment/{{ document.id }}"
+    >
+
+        <textarea
+            name="comment"
+            rows="4"
+            required
+        ></textarea>
+
+        <br><br>
+
+        <button class="btn btn-primary">
+            Gửi bình luận
+        </button>
+
+    </form>
+
+</div>
+
+{% endblock %}
